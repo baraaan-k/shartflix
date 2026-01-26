@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/di/service_locator.dart';
+import '../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
 
@@ -22,6 +24,12 @@ class _AppShellState extends State<AppShell> {
     'Home',
     'Profile',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    ServiceLocator.instance.get<FavoritesCubit>().load();
+  }
 
   void _onTap(int index) {
     if (index == _currentIndex) return;
