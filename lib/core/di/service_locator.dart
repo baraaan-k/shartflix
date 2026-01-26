@@ -25,6 +25,8 @@ import '../../features/profile/domain/usecases/get_profile_usecase.dart';
 import '../../features/profile/domain/usecases/set_avatar_usecase.dart';
 import '../../features/profile/presentation/bloc/profile_cubit.dart';
 import '../../features/offer/data/offer_flag_store.dart';
+import '../localization/app_locale_controller.dart';
+import '../localization/locale_prefs_store.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -145,5 +147,11 @@ void setupDependencies() {
   );
   sl.registerLazySingleton<OfferFlagStore>(
     () => OfferFlagStore(),
+  );
+  sl.registerLazySingleton<LocalePrefsStore>(
+    () => LocalePrefsStore(),
+  );
+  sl.registerLazySingleton<AppLocaleController>(
+    () => AppLocaleController(sl.get<LocalePrefsStore>()),
   );
 }

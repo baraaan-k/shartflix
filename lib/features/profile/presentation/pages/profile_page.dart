@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/localization/app_locale_controller.dart';
 import '../../../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../../../features/favorites/domain/entities/favorite_movie.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_cubit.dart';
@@ -23,6 +25,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   late final FavoritesCubit _favoritesCubit;
   late final ProfileCubit _profileCubit;
+  late final AppLocaleController _localeController;
   StreamSubscription<FavoritesState>? _subscription;
   StreamSubscription<ProfileState>? _profileSubscription;
   String? _lastError;
@@ -33,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _favoritesCubit = ServiceLocator.instance.get<FavoritesCubit>();
     _profileCubit = ServiceLocator.instance.get<ProfileCubit>();
+    _localeController = ServiceLocator.instance.get<AppLocaleController>();
     _subscription = _favoritesCubit.stream.listen(_handleState);
     _profileSubscription = _profileCubit.stream.listen(_handleProfileState);
     _profileCubit.load();
@@ -49,8 +53,9 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) return;
     if (state.errorMessage != null && state.errorMessage != _lastError) {
       _lastError = state.errorMessage;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.errorMessage!)),
+        SnackBar(content: Text(l10n.commonError)),
       );
     }
   }
@@ -59,8 +64,9 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) return;
     if (state.errorMessage != null && state.errorMessage != _lastProfileError) {
       _lastProfileError = state.errorMessage;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.errorMessage!)),
+        SnackBar(content: Text(l10n.commonError)),
       );
     }
   }
@@ -73,14 +79,16 @@ class _ProfilePageState extends State<ProfilePage> {
       await _profileCubit.setAvatar(File(selected.path));
     } catch (_) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to pick image.')),
+        SnackBar(content: Text(l10n.profilePhotoPickError)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<ProfileState>(
       initialData: _profileCubit.state,
       stream: _profileCubit.stream,
@@ -93,9 +101,14 @@ class _ProfilePageState extends State<ProfilePage> {
             ? user!.name!
             : hasEmail
                 ? user!.email.split('@').first
-                : 'Guest';
+                : l10n.profileGuest;
         final email = user?.email ?? '';
         final avatarPath = user?.avatarPath;
+        final selectedLocale =
+            _localeController.locale.value ?? Localizations.localeOf(context);
+        final dropdownLocale = selectedLocale.languageCode == 'tr'
+            ? const Locale('tr')
+            : const Locale('en');
 
         return StreamBuilder<FavoritesState>(
           initialData: _favoritesCubit.state,
@@ -146,21 +159,47 @@ class _ProfilePageState extends State<ProfilePage> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Change photo'),
+                                : Text(l10n.profileChangePhoto),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Text(
+                      l10n.profileLanguage,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(width: 12),
+                    DropdownButton<Locale>(
+                      value: dropdownLocale,
+                      onChanged: (locale) {
+                        _localeController.setLocale(locale);
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: const Locale('en'),
+                          child: Text(l10n.profileLanguageEnglish),
+                        ),
+                        DropdownMenuItem(
+                          value: const Locale('tr'),
+                          child: Text(l10n.profileLanguageTurkish),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 Text(
-                  'Your favorite movies',
+                  l10n.profileFavoritesTitle,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
                 if (state.favorites.isEmpty)
-                  const _EmptyFavorites()
+                  _EmptyFavorites(message: l10n.profileNoFavorites)
                 else
                   ...state.favorites.map(
                     (movie) => _FavoriteTile(
@@ -179,7 +218,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       (route) => false,
                     );
                   },
-                  child: const Text('Logout'),
+                  child: Text(l10n.profileLogout),
                 ),
               ],
             );
@@ -191,14 +230,16 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 class _EmptyFavorites extends StatelessWidget {
-  const _EmptyFavorites();
+  const _EmptyFavorites({required this.message});
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
-        child: Text('No favorites yet.'),
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Text(message),
       ),
     );
   }

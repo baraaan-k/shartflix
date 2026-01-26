@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../favorites/domain/entities/favorite_movie.dart';
@@ -73,8 +74,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   if (state.errorMessage != null && state.movies.isNotEmpty) {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(state.errorMessage!)),
+      SnackBar(content: Text(l10n.homeErrorTitle)),
     );
   }
 }
@@ -83,8 +85,9 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     if (state.errorMessage != null && state.errorMessage != _lastFavoritesError) {
       _lastFavoritesError = state.errorMessage;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.errorMessage!)),
+        SnackBar(content: Text(l10n.commonError)),
       );
     }
   }
@@ -101,6 +104,7 @@ class _HomePageState extends State<HomePage> {
       stream: _cubit.stream,
       builder: (context, snapshot) {
         final state = snapshot.data ?? const HomeState();
+        final l10n = AppLocalizations.of(context)!;
         if (state.status == HomeStatus.loading && state.movies.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -108,7 +112,8 @@ class _HomePageState extends State<HomePage> {
           return _RefreshableState(
             onRefresh: _onRefresh,
             child: _ErrorState(
-              message: state.errorMessage ?? 'Something went wrong',
+              message: l10n.homeErrorTitle,
+              retryLabel: l10n.commonRetry,
               onRetry: _cubit.loadInitial,
             ),
           );
@@ -116,7 +121,10 @@ class _HomePageState extends State<HomePage> {
         if (state.status == HomeStatus.empty) {
           return _RefreshableState(
             onRefresh: _onRefresh,
-            child: const _EmptyState(),
+            child: _EmptyState(
+              title: l10n.homeEmptyTitle,
+              subtitle: l10n.homeEmptySubtitle,
+            ),
           );
         }
 
@@ -140,6 +148,8 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return _LimitedOfferBanner(
+                      title: l10n.offerBannerTitle,
+                      subtitle: l10n.offerBannerSubtitle,
                       onTap: () async {
                         await showLimitedOfferSheet(context);
                         await _offerFlagStore.markOfferShown();
@@ -186,8 +196,14 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _LimitedOfferBanner extends StatelessWidget {
-  const _LimitedOfferBanner({required this.onTap});
+  const _LimitedOfferBanner({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
@@ -196,8 +212,8 @@ class _LimitedOfferBanner extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Card(
         child: ListTile(
-          title: const Text('Limited Offer'),
-          subtitle: const Text('Unlock premium for a limited time.'),
+          title: Text(title),
+          subtitle: Text(subtitle),
           trailing: const Icon(Icons.arrow_forward),
           onTap: onTap,
         ),
@@ -207,7 +223,13 @@ class _LimitedOfferBanner extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -220,13 +242,13 @@ class _EmptyState extends StatelessWidget {
             const Icon(Icons.movie_filter_outlined, size: 48),
             const SizedBox(height: 12),
             Text(
-              'No movies found',
+              title,
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Pull down to refresh the list.',
+              subtitle,
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -240,10 +262,12 @@ class _EmptyState extends StatelessWidget {
 class _ErrorState extends StatelessWidget {
   const _ErrorState({
     required this.message,
+    required this.retryLabel,
     required this.onRetry,
   });
 
   final String message;
+  final String retryLabel;
   final VoidCallback onRetry;
 
   @override
@@ -264,7 +288,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: onRetry,
-              child: const Text('Retry'),
+              child: Text(retryLabel),
             ),
           ],
         ),
