@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+
+import '../../../../core/log/app_log.dart';
 
 class ProfileLocalDataSource {
   static const _profileFileName = 'shartflix_profile.json';
@@ -17,8 +18,8 @@ class ProfileLocalDataSource {
     final docs = await getApplicationDocumentsDirectory();
     final file = File('${docs.path}/$_profileFileName');
 
-    debugPrint('[Profile] docsDir: ${docs.path}');
-    debugPrint('[Profile] profileJson: ${file.path}');
+    AppLog.d('Profile', 'docsDir: ${docs.path}');
+    AppLog.d('Profile', 'profileJson: ${file.path}');
 
     if (!await file.exists()) return const ProfileLocalData();
 
@@ -31,7 +32,7 @@ class ProfileLocalDataSource {
     final map = Map<String, dynamic>.from(decoded);
 
     final stored = (map[_avatarKey] as String?)?.trim();
-    debugPrint('[Profile] loaded avatarPath(raw): $stored');
+    AppLog.d('Profile', 'loaded avatarPath(raw): $stored');
 
     String? relPath;
     if (stored != null && stored.isNotEmpty) {
@@ -51,15 +52,15 @@ class ProfileLocalDataSource {
     if (relPath != null && relPath.isNotEmpty) {
       final abs = '${docs.path}/$relPath';
       final exists = await File(abs).exists();
-      debugPrint('[Profile] avatar abs: $abs');
-      debugPrint('[Profile] avatar exists: $exists');
+      AppLog.d('Profile', 'avatar abs: $abs');
+      AppLog.d('Profile', 'avatar exists: $exists');
       if (exists) {
         resolvedAbs = abs;
       } else {
         final stableAbs = '${docs.path}/$_avatarRelPath';
         final stableExists = await File(stableAbs).exists();
-        debugPrint('[Profile] stable avatar abs: $stableAbs');
-        debugPrint('[Profile] stable avatar exists: $stableExists');
+        AppLog.d('Profile', 'stable avatar abs: $stableAbs');
+        AppLog.d('Profile', 'stable avatar exists: $stableExists');
         if (stableExists) {
           resolvedAbs = stableAbs;
           relPath = _avatarRelPath;
@@ -70,8 +71,8 @@ class ProfileLocalDataSource {
     } else {
       final stableAbs = '${docs.path}/$_avatarRelPath';
       final stableExists = await File(stableAbs).exists();
-      debugPrint('[Profile] stable avatar abs: $stableAbs');
-      debugPrint('[Profile] stable avatar exists: $stableExists');
+      AppLog.d('Profile', 'stable avatar abs: $stableAbs');
+      AppLog.d('Profile', 'stable avatar exists: $stableExists');
       if (stableExists) {
         resolvedAbs = stableAbs;
         relPath = _avatarRelPath;
@@ -87,7 +88,7 @@ class ProfileLocalDataSource {
         avatarPath: normalizedToStore,
       );
       await _writeProfile(fixed);
-      debugPrint('[Profile] normalized avatarPath written: $normalizedToStore');
+      AppLog.d('Profile', 'normalized avatarPath written: $normalizedToStore');
     }
 
     return ProfileLocalData(
@@ -106,15 +107,15 @@ class ProfileLocalDataSource {
 
     final targetAbs = '${docs.path}/$_avatarRelPath';
 
-    debugPrint('[Profile] picked path: ${imageFile.path}');
-    debugPrint('[Profile] saving to: $targetAbs');
+    AppLog.d('Profile', 'picked path: ${imageFile.path}');
+    AppLog.d('Profile', 'saving to: $targetAbs');
 
     final bytes = await imageFile.readAsBytes();
     final targetFile = File(targetAbs);
     await targetFile.writeAsBytes(bytes, flush: true);
 
     final exists = await targetFile.exists();
-    debugPrint('[Profile] saved exists: $exists');
+    AppLog.d('Profile', 'saved exists: $exists');
 
     final profile = await readProfile();
     await _writeProfile(profile.copyWith(avatarPath: _avatarRelPath));

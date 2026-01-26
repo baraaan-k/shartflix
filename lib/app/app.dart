@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../core/router/app_router.dart';
 import '../core/theme/app_theme.dart';
+import '../core/di/service_locator.dart';
+import '../core/localization/app_locale_controller.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Shartflix',
-      theme: AppTheme.light,
-      onGenerateRoute: AppRouter.onGenerateRoute,
-      initialRoute: AppRoutes.authGate,
+    final localeController = ServiceLocator.instance.get<AppLocaleController>();
+
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: localeController.locale,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          title: 'Shartflix',
+          theme: AppTheme.light,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          initialRoute: AppRoutes.authGate,
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        );
+      },
     );
   }
 }

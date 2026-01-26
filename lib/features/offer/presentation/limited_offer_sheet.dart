@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<void> showLimitedOfferSheet(BuildContext context) async {
   final result = await showModalBottomSheet<bool>(
@@ -9,6 +10,7 @@ Future<void> showLimitedOfferSheet(BuildContext context) async {
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (sheetContext) {
+      final l10n = AppLocalizations.of(sheetContext)!;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
@@ -17,10 +19,10 @@ Future<void> showLimitedOfferSheet(BuildContext context) async {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Limited Offer',
-                    style: TextStyle(
+                    l10n.limitedOfferTitle,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                     ),
@@ -33,26 +35,24 @@ Future<void> showLimitedOfferSheet(BuildContext context) async {
               ],
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Unlock premium access for a limited time.',
-            ),
+            Text(l10n.limitedOfferSubtitle),
             const SizedBox(height: 16),
-            const _OfferBullet(text: 'Ad-free movie nights'),
-            const _OfferBullet(text: 'Exclusive premieres'),
-            const _OfferBullet(text: 'Cancel anytime'),
+            _OfferBullet(text: l10n.limitedOfferBenefit1),
+            _OfferBullet(text: l10n.limitedOfferBenefit2),
+            _OfferBullet(text: l10n.limitedOfferBenefit3),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.of(sheetContext).pop(true),
-                child: const Text('View Plans'),
+                child: Text(l10n.limitedOfferCta),
               ),
             ),
             const SizedBox(height: 8),
             Center(
               child: TextButton(
                 onPressed: () => Navigator.of(sheetContext).pop(false),
-                child: const Text('Not now'),
+                child: Text(l10n.limitedOfferNotNow),
               ),
             ),
             const SizedBox(height: 8),
@@ -64,7 +64,7 @@ Future<void> showLimitedOfferSheet(BuildContext context) async {
 
   if (result == true && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Offer accepted')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.limitedOfferAccepted)),
     );
   }
 }

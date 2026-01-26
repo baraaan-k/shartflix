@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../core/di/service_locator.dart';
 import '../features/auth/data/datasources/auth_local_data_source.dart';
@@ -24,10 +25,6 @@ class _AppShellState extends State<AppShell> {
     ProfilePage(),
   ];
 
-  final List<String> _titles = const [
-    'Home',
-    'Profile',
-  ];
 
   @override
   void initState() {
@@ -59,9 +56,14 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final titles = [
+      l10n.bottomNavHome,
+      l10n.bottomNavProfile,
+    ];
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_currentIndex]),
+        title: Text(titles[_currentIndex]),
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -70,14 +72,14 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTap,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            label: l10n.bottomNavHome,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            label: l10n.bottomNavProfile,
           ),
         ],
       ),
