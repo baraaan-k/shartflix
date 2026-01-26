@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/di/service_locator.dart';
 import '../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../features/home/presentation/pages/home_page.dart';
+import '../features/profile/presentation/bloc/profile_cubit.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
 
 class AppShell extends StatefulWidget {
@@ -29,6 +30,7 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
     ServiceLocator.instance.get<FavoritesCubit>().load();
+    ServiceLocator.instance.get<ProfileCubit>().load();
   }
 
   void _onTap(int index) {

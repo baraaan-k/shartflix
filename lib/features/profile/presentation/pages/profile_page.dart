@@ -109,6 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CircleAvatar(
+                      key: ValueKey(profileState.avatarRevision),
                       radius: 36,
                       backgroundImage: avatarPath != null
                           ? FileImage(File(avatarPath))
