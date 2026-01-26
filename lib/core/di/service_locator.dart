@@ -24,6 +24,7 @@ import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/get_profile_usecase.dart';
 import '../../features/profile/domain/usecases/set_avatar_usecase.dart';
 import '../../features/profile/presentation/bloc/profile_cubit.dart';
+import '../../features/offer/data/offer_flag_store.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -141,5 +142,8 @@ void setupDependencies() {
       getProfileUseCase: sl.get<GetProfileUseCase>(),
       setAvatarUseCase: sl.get<SetAvatarUseCase>(),
     ),
+  );
+  sl.registerLazySingleton<OfferFlagStore>(
+    () => OfferFlagStore(),
   );
 }

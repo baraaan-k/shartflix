@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
+
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/set_avatar_usecase.dart';
 import 'profile_state.dart';
@@ -49,7 +51,16 @@ class ProfileCubit {
     _emit(_state.copyWith(isUpdatingAvatar: true, errorMessage: null));
     try {
       final user = await _setAvatarUseCase(imageFile);
-      _emit(_state.copyWith(user: user, isUpdatingAvatar: false));
+      if (user.avatarPath != null && user.avatarPath!.isNotEmpty) {
+        await FileImage(File(user.avatarPath!)).evict();
+      }
+      _emit(
+        _state.copyWith(
+          user: user,
+          isUpdatingAvatar: false,
+          avatarRevision: DateTime.now().microsecondsSinceEpoch,
+        ),
+      );
     } catch (error) {
       _emit(
         _state.copyWith(

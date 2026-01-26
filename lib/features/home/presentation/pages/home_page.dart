@@ -6,6 +6,8 @@ import '../../../../core/di/service_locator.dart';
 import '../../../favorites/domain/entities/favorite_movie.dart';
 import '../../../favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../favorites/presentation/bloc/favorites_state.dart';
+import '../../../offer/data/offer_flag_store.dart';
+import '../../../offer/presentation/limited_offer_sheet.dart';
 import '../../domain/usecases/get_movies_page_usecase.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -21,6 +23,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final HomeCubit _cubit;
   late final FavoritesCubit _favoritesCubit;
+  late final OfferFlagStore _offerFlagStore;
   final ScrollController _scrollController = ScrollController();
   StreamSubscription<HomeState>? _subscription;
   StreamSubscription<FavoritesState>? _favoritesSubscription;
@@ -33,6 +36,7 @@ class _HomePageState extends State<HomePage> {
       ServiceLocator.instance.get<GetMoviesPageUseCase>(),
     );
     _favoritesCubit = ServiceLocator.instance.get<FavoritesCubit>();
+    _offerFlagStore = ServiceLocator.instance.get<OfferFlagStore>();
     _subscription = _cubit.stream.listen(_handleState);
     _favoritesSubscription = _favoritesCubit.stream.listen(_handleFavoritesState);
     _scrollController.addListener(_onScroll);
@@ -116,7 +120,8 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        final itemCount = state.movies.length + (state.isLoadingMore ? 1 : 0);
+        final itemCount =
+            state.movies.length + (state.isLoadingMore ? 1 : 0) + 1;
 
         return StreamBuilder<FavoritesState>(
           initialData: _favoritesCubit.state,
@@ -133,7 +138,16 @@ class _HomePageState extends State<HomePage> {
                 ),
                 itemCount: itemCount,
                 itemBuilder: (context, index) {
-                  if (index >= state.movies.length) {
+                  if (index == 0) {
+                    return _LimitedOfferBanner(
+                      onTap: () async {
+                        await showLimitedOfferSheet(context);
+                        await _offerFlagStore.markOfferShown();
+                      },
+                    );
+                  }
+                  final movieIndex = index - 1;
+                  if (movieIndex >= state.movies.length) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
                       child: Center(
@@ -145,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   }
-                  final movie = state.movies[index];
+                  final movie = state.movies[movieIndex];
                   final isFavorite =
                       favoritesState.favoriteIds.contains(movie.id);
                   return MovieCard(
@@ -167,6 +181,27 @@ class _HomePageState extends State<HomePage> {
           },
         );
       },
+    );
+  }
+}
+
+class _LimitedOfferBanner extends StatelessWidget {
+  const _LimitedOfferBanner({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Card(
+        child: ListTile(
+          title: const Text('Limited Offer'),
+          subtitle: const Text('Unlock premium for a limited time.'),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: onTap,
+        ),
+      ),
     );
   }
 }
