@@ -17,7 +17,9 @@ class ToggleFavoriteUseCase {
     } else {
       updated.add(movie);
     }
-    await _repository.saveFavorites(updated);
-    return updated;
+    await _repository.toggleFavorite(movie.id);
+    final remoteFavorites = await _repository.fetchRemoteFavorites();
+    await _repository.saveFavorites(remoteFavorites);
+    return remoteFavorites;
   }
 }

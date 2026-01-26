@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../core/router/app_router.dart';
 import '../core/theme/app_theme.dart';
 import '../core/di/service_locator.dart';
+import '../core/navigation/navigation_service.dart';
 import '../core/localization/app_locale_controller.dart';
 
 class App extends StatelessWidget {
@@ -13,6 +14,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeController = ServiceLocator.instance.get<AppLocaleController>();
+    final navigationService =
+        ServiceLocator.instance.get<NavigationService>();
 
     return ValueListenableBuilder<Locale?>(
       valueListenable: localeController.locale,
@@ -22,6 +25,7 @@ class App extends StatelessWidget {
           theme: AppTheme.light,
           onGenerateRoute: AppRouter.onGenerateRoute,
           initialRoute: AppRoutes.authGate,
+          navigatorKey: navigationService.navigatorKey,
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [

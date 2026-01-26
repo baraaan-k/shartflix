@@ -9,13 +9,13 @@ class FavoritesState {
   });
 
   final List<FavoriteMovie> favorites;
-  final Set<int> favoriteIds;
+  final Set<String> favoriteIds;
   final bool isLoading;
   final String? errorMessage;
 
   FavoritesState copyWith({
     List<FavoriteMovie>? favorites,
-    Set<int>? favoriteIds,
+    Set<String>? favoriteIds,
     bool? isLoading,
     String? errorMessage,
   }) {

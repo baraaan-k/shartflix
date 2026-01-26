@@ -13,11 +13,11 @@ class MoviesRepositoryImpl implements MoviesRepository {
   }) async {
     final response = await _remoteDataSource.fetchMovies(
       page: page,
-      pageSize: pageSize,
     );
     final movies = response.items.map((item) => item.toEntity()).toList();
-    final totalLoaded = page * pageSize;
-    final hasMore = totalLoaded < response.total;
+    final hasMore = response.totalPages != null && response.currentPage != null
+        ? response.currentPage! < response.totalPages!
+        : movies.isNotEmpty;
     return MoviesPage(movies: movies, hasMore: hasMore);
   }
 }

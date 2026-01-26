@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../log/app_log.dart';
+import '../navigation/navigation_service.dart';
 import '../../features/auth/data/datasources/auth_local_data_source.dart';
+import '../../features/profile/data/datasources/profile_local_data_source.dart';
 
 class ApiException implements Exception {
   ApiException(this.statusCode, this.message);
@@ -17,13 +19,19 @@ class ApiException implements Exception {
 class ApiClient {
   ApiClient({
     required AuthLocalDataSource authLocalDataSource,
+    required ProfileLocalDataSource profileLocalDataSource,
+    required NavigationService navigationService,
     HttpClient? httpClient,
   })  : _authLocalDataSource = authLocalDataSource,
+        _profileLocalDataSource = profileLocalDataSource,
+        _navigationService = navigationService,
         _httpClient = httpClient ?? HttpClient();
 
   static const String baseUrl = 'https://caseapi.servicelabs.tech';
 
   final AuthLocalDataSource _authLocalDataSource;
+  final ProfileLocalDataSource _profileLocalDataSource;
+  final NavigationService _navigationService;
   final HttpClient _httpClient;
 
   Future<Map<String, dynamic>> postJson(
@@ -105,7 +113,22 @@ class ApiClient {
     final body = await response.transform(utf8.decoder).join();
     AppLog.d('Api', '$path -> $status body: $body');
     final decoded = _safeDecode(body);
+    if (_isEnvelope(decoded)) {
+      final response = decoded!['response'];
+      final code = response is Map ? response['code'] as int? : null;
+      if (code == 401 || status == 401) {
+        await _handleUnauthorized();
+      }
+      if (code != 200 && code != 201) {
+        final message = _extractErrorMessage(decoded, body) ??
+            'Request failed with status $status';
+        throw ApiException(code ?? status, message);
+      }
+    }
     if (status < 200 || status >= 300) {
+      if (status == 401) {
+        await _handleUnauthorized();
+      }
       final errorBody = body.trim();
       final extracted = _extractErrorMessage(decoded, errorBody);
       final message = extracted ??
@@ -115,6 +138,11 @@ class ApiClient {
       throw ApiException(status, message);
     }
     return decoded ?? <String, dynamic>{};
+  }
+
+  bool _isEnvelope(Map<String, dynamic>? json) {
+    if (json == null) return false;
+    return json.containsKey('response') && json.containsKey('data');
   }
 
   Map<String, dynamic>? _safeDecode(String body) {
@@ -144,5 +172,11 @@ class ApiClient {
       return message;
     }
     return null;
+  }
+
+  Future<void> _handleUnauthorized() async {
+    await _authLocalDataSource.clearAll();
+    await _profileLocalDataSource.clearProfile();
+    _navigationService.goToLogin();
   }
 }

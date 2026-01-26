@@ -9,6 +9,7 @@ import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
 import '../network/api_client.dart';
+import '../navigation/navigation_service.dart';
 import '../../features/home/data/datasources/movies_remote_data_source.dart';
 import '../../features/home/data/repositories/movies_repository_impl.dart';
 import '../../features/home/domain/repositories/movies_repository.dart';
@@ -16,7 +17,9 @@ import '../../features/home/domain/usecases/get_movies_page_usecase.dart';
 import '../../features/favorites/data/datasources/favorites_local_data_source.dart';
 import '../../features/favorites/data/repositories/favorites_repository_impl.dart';
 import '../../features/favorites/domain/repositories/favorites_repository.dart';
+import '../../features/favorites/domain/usecases/fetch_remote_favorites_usecase.dart';
 import '../../features/favorites/domain/usecases/get_favorites_usecase.dart';
+import '../../features/favorites/domain/usecases/save_favorites_usecase.dart';
 import '../../features/favorites/domain/usecases/toggle_favorite_usecase.dart';
 import '../../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../../features/profile/data/datasources/profile_local_data_source.dart';
@@ -77,14 +80,21 @@ void setupDependencies() {
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sl.get<FlutterSecureStorage>()),
   );
+  sl.registerLazySingleton<ProfileLocalDataSource>(
+    () => ProfileLocalDataSource(),
+  );
+  sl.registerLazySingleton<NavigationService>(
+    () => NavigationService(),
+  );
   sl.registerLazySingleton<ApiClient>(
-    () => ApiClient(authLocalDataSource: sl.get<AuthLocalDataSource>()),
+    () => ApiClient(
+      authLocalDataSource: sl.get<AuthLocalDataSource>(),
+      profileLocalDataSource: sl.get<ProfileLocalDataSource>(),
+      navigationService: sl.get<NavigationService>(),
+    ),
   );
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(sl.get<ApiClient>()),
-  );
-  sl.registerLazySingleton<ProfileLocalDataSource>(
-    () => ProfileLocalDataSource(),
   );
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
@@ -109,7 +119,7 @@ void setupDependencies() {
     ),
   );
   sl.registerLazySingleton<MoviesRemoteDataSource>(
-    () => FakeMoviesRemoteDataSource(),
+    () => MoviesRemoteDataSourceImpl(sl.get<ApiClient>()),
   );
   sl.registerLazySingleton<MoviesRepository>(
     () => MoviesRepositoryImpl(sl.get<MoviesRemoteDataSource>()),
@@ -121,10 +131,19 @@ void setupDependencies() {
     () => FavoritesLocalDataSourceImpl(),
   );
   sl.registerLazySingleton<FavoritesRepository>(
-    () => FavoritesRepositoryImpl(sl.get<FavoritesLocalDataSource>()),
+    () => FavoritesRepositoryImpl(
+      sl.get<FavoritesLocalDataSource>(),
+      sl.get<MoviesRemoteDataSource>(),
+    ),
   );
   sl.registerLazySingleton<GetFavoritesUseCase>(
     () => GetFavoritesUseCase(sl.get<FavoritesRepository>()),
+  );
+  sl.registerLazySingleton<FetchRemoteFavoritesUseCase>(
+    () => FetchRemoteFavoritesUseCase(sl.get<FavoritesRepository>()),
+  );
+  sl.registerLazySingleton<SaveFavoritesUseCase>(
+    () => SaveFavoritesUseCase(sl.get<FavoritesRepository>()),
   );
   sl.registerLazySingleton<ToggleFavoriteUseCase>(
     () => ToggleFavoriteUseCase(sl.get<FavoritesRepository>()),
@@ -132,6 +151,8 @@ void setupDependencies() {
   sl.registerLazySingleton<FavoritesCubit>(
     () => FavoritesCubit(
       getFavoritesUseCase: sl.get<GetFavoritesUseCase>(),
+      fetchRemoteFavoritesUseCase: sl.get<FetchRemoteFavoritesUseCase>(),
+      saveFavoritesUseCase: sl.get<SaveFavoritesUseCase>(),
       toggleFavoriteUseCase: sl.get<ToggleFavoriteUseCase>(),
     ),
   );
