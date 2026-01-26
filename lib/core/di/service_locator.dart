@@ -8,6 +8,10 @@ import '../../features/auth/domain/usecases/get_token_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
+import '../../features/home/data/datasources/movies_remote_data_source.dart';
+import '../../features/home/data/repositories/movies_repository_impl.dart';
+import '../../features/home/domain/repositories/movies_repository.dart';
+import '../../features/home/domain/usecases/get_movies_page_usecase.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -71,5 +75,14 @@ void setupDependencies() {
   );
   sl.registerLazySingleton<LogoutUseCase>(
     () => LogoutUseCase(sl.get<AuthRepository>()),
+  );
+  sl.registerLazySingleton<MoviesRemoteDataSource>(
+    () => FakeMoviesRemoteDataSource(),
+  );
+  sl.registerLazySingleton<MoviesRepository>(
+    () => MoviesRepositoryImpl(sl.get<MoviesRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<GetMoviesPageUseCase>(
+    () => GetMoviesPageUseCase(sl.get<MoviesRepository>()),
   );
 }
