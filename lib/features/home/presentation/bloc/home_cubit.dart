@@ -64,7 +64,7 @@ class HomeCubit {
       _emit(
         _state.copyWith(
           status: HomeStatus.error,
-          errorMessage: error.toString(),
+          errorMessage: 'Failed to load movies. Please try again.',
         ),
       );
     } finally {
@@ -99,7 +99,7 @@ class HomeCubit {
       _emit(
         _state.copyWith(
           isLoadingMore: false,
-          errorMessage: error.toString(),
+          errorMessage: 'Failed to load more movies.',
         ),
       );
     } finally {

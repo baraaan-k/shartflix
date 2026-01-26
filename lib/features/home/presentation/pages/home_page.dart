@@ -82,13 +82,19 @@ class _HomePageState extends State<HomePage> {
           return const Center(child: CircularProgressIndicator());
         }
         if (state.status == HomeStatus.error && state.movies.isEmpty) {
-          return _ErrorState(
-            message: state.errorMessage ?? 'Something went wrong',
-            onRetry: _cubit.loadInitial,
+          return _RefreshableState(
+            onRefresh: _onRefresh,
+            child: _ErrorState(
+              message: state.errorMessage ?? 'Something went wrong',
+              onRetry: _cubit.loadInitial,
+            ),
           );
         }
         if (state.status == HomeStatus.empty) {
-          return const _EmptyState();
+          return _RefreshableState(
+            onRefresh: _onRefresh,
+            child: const _EmptyState(),
+          );
         }
 
         final itemCount = state.movies.length + (state.isLoadingMore ? 1 : 0);
@@ -97,7 +103,9 @@ class _HomePageState extends State<HomePage> {
           onRefresh: _onRefresh,
           child: ListView.builder(
             controller: _scrollController,
-            physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
             itemCount: itemCount,
             itemBuilder: (context, index) {
               if (index >= state.movies.length) {
@@ -126,8 +134,28 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('No movies found.'),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.movie_filter_outlined, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'No movies found',
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pull down to refresh the list.',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -149,8 +177,11 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Icon(Icons.warning_amber_rounded, size: 48),
+            const SizedBox(height: 12),
             Text(
               message,
+              style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -160,6 +191,34 @@ class _ErrorState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _RefreshableState extends StatelessWidget {
+  const _RefreshableState({
+    required this.onRefresh,
+    required this.child,
+  });
+
+  final Future<void> Function() onRefresh;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: child,
+          ),
+        ],
       ),
     );
   }
