@@ -1,3 +1,14 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../../features/auth/data/datasources/auth_local_data_source.dart';
+import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/usecases/get_token_usecase.dart';
+import '../../features/auth/domain/usecases/login_usecase.dart';
+import '../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../features/auth/domain/usecases/register_usecase.dart';
+
 class ServiceLocator {
   ServiceLocator._();
 
@@ -33,4 +44,32 @@ class ServiceLocator {
 void setupDependencies() {
   final sl = ServiceLocator.instance;
   sl.reset();
+
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(),
+  );
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => FakeAuthRemoteDataSource(),
+  );
+  sl.registerLazySingleton<AuthLocalDataSource>(
+    () => AuthLocalDataSourceImpl(sl.get<FlutterSecureStorage>()),
+  );
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      remote: sl.get<AuthRemoteDataSource>(),
+      local: sl.get<AuthLocalDataSource>(),
+    ),
+  );
+  sl.registerLazySingleton<LoginUseCase>(
+    () => LoginUseCase(sl.get<AuthRepository>()),
+  );
+  sl.registerLazySingleton<RegisterUseCase>(
+    () => RegisterUseCase(sl.get<AuthRepository>()),
+  );
+  sl.registerLazySingleton<GetTokenUseCase>(
+    () => GetTokenUseCase(sl.get<AuthRepository>()),
+  );
+  sl.registerLazySingleton<LogoutUseCase>(
+    () => LogoutUseCase(sl.get<AuthRepository>()),
+  );
 }

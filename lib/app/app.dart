@@ -12,7 +12,7 @@ class App extends StatelessWidget {
       title: 'Shartflix',
       theme: AppTheme.light,
       onGenerateRoute: AppRouter.onGenerateRoute,
-      initialRoute: AppRoutes.shell,
+      initialRoute: AppRoutes.authGate,
     );
   }
 }
