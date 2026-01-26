@@ -1,45 +1,71 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ======================
+# Flutter / Dart
+# ======================
 .dart_tool/
+.packages
+.pub/
+build/
+coverage/
+*.log
+
+# Flutter generated
 .flutter-plugins
 .flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
+.metadata
 
-# Symbolication related
-app.*.symbols
+# ======================
+# IDEs
+# ======================
+.idea/
+.vscode/
+*.iml
 
-# Obfuscation related
-app.*.map.json
+# macOS
+.DS_Store
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# ======================
+# Android
+# ======================
+android/.gradle/
+android/local.properties
+android/key.properties
+**/keystore.jks
+**/*.keystore
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# If you use Firebase, you typically COMMIT google-services.json
+# android/app/google-services.json
+
+# ======================
+# iOS / Xcode
+# ======================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Xcode user data
+ios/**/*.xcuserdata/
+ios/**/*.xcuserstate
+ios/**/*.pbxuser
+ios/**/*.mode1v3
+ios/**/*.mode2v3
+ios/**/*.perspectivev3
+ios/**/DerivedData/
+
+# ======================
+# Secrets / Env
+# ======================
+.env
+.env.*
+*.pem
+*.p12
+*.cer
+*.crt
+*.key
+secrets/
