@@ -18,6 +18,12 @@ import '../../features/favorites/domain/repositories/favorites_repository.dart';
 import '../../features/favorites/domain/usecases/get_favorites_usecase.dart';
 import '../../features/favorites/domain/usecases/toggle_favorite_usecase.dart';
 import '../../features/favorites/presentation/bloc/favorites_cubit.dart';
+import '../../features/profile/data/datasources/profile_local_data_source.dart';
+import '../../features/profile/data/repositories/profile_repository_impl.dart';
+import '../../features/profile/domain/repositories/profile_repository.dart';
+import '../../features/profile/domain/usecases/get_profile_usecase.dart';
+import '../../features/profile/domain/usecases/set_avatar_usecase.dart';
+import '../../features/profile/presentation/bloc/profile_cubit.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -56,7 +62,10 @@ void setupDependencies() {
   sl.reset();
 
   sl.registerLazySingleton<FlutterSecureStorage>(
-    () => const FlutterSecureStorage(),
+    () => const FlutterSecureStorage(
+      iOptions: AuthLocalDataSourceImpl.iosOptions,
+      aOptions: AuthLocalDataSourceImpl.androidOptions,
+    ),
   );
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => FakeAuthRemoteDataSource(),
@@ -64,10 +73,14 @@ void setupDependencies() {
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sl.get<FlutterSecureStorage>()),
   );
+  sl.registerLazySingleton<ProfileLocalDataSource>(
+    () => ProfileLocalDataSource(),
+  );
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       remote: sl.get<AuthRemoteDataSource>(),
       local: sl.get<AuthLocalDataSource>(),
+      profileLocalDataSource: sl.get<ProfileLocalDataSource>(),
     ),
   );
   sl.registerLazySingleton<LoginUseCase>(
@@ -80,7 +93,10 @@ void setupDependencies() {
     () => GetTokenUseCase(sl.get<AuthRepository>()),
   );
   sl.registerLazySingleton<LogoutUseCase>(
-    () => LogoutUseCase(sl.get<AuthRepository>()),
+    () => LogoutUseCase(
+      sl.get<AuthRepository>(),
+      sl.get<ProfileRepository>(),
+    ),
   );
   sl.registerLazySingleton<MoviesRemoteDataSource>(
     () => FakeMoviesRemoteDataSource(),
@@ -107,6 +123,23 @@ void setupDependencies() {
     () => FavoritesCubit(
       getFavoritesUseCase: sl.get<GetFavoritesUseCase>(),
       toggleFavoriteUseCase: sl.get<ToggleFavoriteUseCase>(),
+    ),
+  );
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(
+      profileLocalDataSource: sl.get<ProfileLocalDataSource>(),
+    ),
+  );
+  sl.registerLazySingleton<GetProfileUseCase>(
+    () => GetProfileUseCase(sl.get<ProfileRepository>()),
+  );
+  sl.registerLazySingleton<SetAvatarUseCase>(
+    () => SetAvatarUseCase(sl.get<ProfileRepository>()),
+  );
+  sl.registerLazySingleton<ProfileCubit>(
+    () => ProfileCubit(
+      getProfileUseCase: sl.get<GetProfileUseCase>(),
+      setAvatarUseCase: sl.get<SetAvatarUseCase>(),
     ),
   );
 }
