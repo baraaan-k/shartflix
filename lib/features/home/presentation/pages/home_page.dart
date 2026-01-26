@@ -48,13 +48,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _handleState(HomeState state) {
-    if (!mounted) return;
-    if (state.errorMessage != null && state.movies.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.errorMessage!)),
-      );
-    }
+  if (!mounted) return;
+
+  if (state.status == HomeStatus.success && state.hasMore && !state.isLoadingMore) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      if (_scrollController.position.maxScrollExtent == 0) {
+        _cubit.loadMore(); // ekran dolana kadar bir sayfa daha çeker
+      }
+    });
   }
+
+  if (state.errorMessage != null && state.movies.isNotEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(state.errorMessage!)),
+    );
+  }
+}
+
 
   Future<void> _onRefresh() async {
     await _cubit.refresh();
@@ -86,6 +97,7 @@ class _HomePageState extends State<HomePage> {
           onRefresh: _onRefresh,
           child: ListView.builder(
             controller: _scrollController,
+            physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: itemCount,
             itemBuilder: (context, index) {
               if (index >= state.movies.length) {
