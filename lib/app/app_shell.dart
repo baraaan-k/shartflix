@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../core/di/service_locator.dart';
+import '../features/auth/data/datasources/auth_local_data_source.dart';
+import '../features/offer/data/offer_flag_store.dart';
+import '../features/offer/presentation/limited_offer_sheet.dart';
 import '../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/profile/presentation/bloc/profile_cubit.dart';
@@ -31,6 +34,20 @@ class _AppShellState extends State<AppShell> {
     super.initState();
     ServiceLocator.instance.get<FavoritesCubit>().load();
     ServiceLocator.instance.get<ProfileCubit>().load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowOffer();
+    });
+  }
+
+  Future<void> _maybeShowOffer() async {
+    final authLocal = ServiceLocator.instance.get<AuthLocalDataSource>();
+    final flagStore = ServiceLocator.instance.get<OfferFlagStore>();
+    final token = await authLocal.getToken();
+    if (token == null) return;
+    final shown = await flagStore.isOfferShown();
+    if (shown || !mounted) return;
+    await showLimitedOfferSheet(context);
+    await flagStore.markOfferShown();
   }
 
   void _onTap(int index) {
