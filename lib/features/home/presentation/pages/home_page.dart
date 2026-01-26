@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../favorites/domain/entities/favorite_movie.dart';
+import '../../../favorites/presentation/bloc/favorites_cubit.dart';
+import '../../../favorites/presentation/bloc/favorites_state.dart';
 import '../../domain/usecases/get_movies_page_usecase.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -17,8 +20,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final HomeCubit _cubit;
+  late final FavoritesCubit _favoritesCubit;
   final ScrollController _scrollController = ScrollController();
   StreamSubscription<HomeState>? _subscription;
+  StreamSubscription<FavoritesState>? _favoritesSubscription;
+  String? _lastFavoritesError;
 
   @override
   void initState() {
@@ -26,7 +32,9 @@ class _HomePageState extends State<HomePage> {
     _cubit = HomeCubit(
       ServiceLocator.instance.get<GetMoviesPageUseCase>(),
     );
+    _favoritesCubit = ServiceLocator.instance.get<FavoritesCubit>();
     _subscription = _cubit.stream.listen(_handleState);
+    _favoritesSubscription = _favoritesCubit.stream.listen(_handleFavoritesState);
     _scrollController.addListener(_onScroll);
     _cubit.loadInitial();
   }
@@ -34,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _subscription?.cancel();
+    _favoritesSubscription?.cancel();
     _scrollController.dispose();
     _cubit.close();
     super.dispose();
@@ -65,6 +74,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+  void _handleFavoritesState(FavoritesState state) {
+    if (!mounted) return;
+    if (state.errorMessage != null && state.errorMessage != _lastFavoritesError) {
+      _lastFavoritesError = state.errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.errorMessage!)),
+      );
+    }
+  }
 
 
   Future<void> _onRefresh() async {
@@ -99,30 +118,53 @@ class _HomePageState extends State<HomePage> {
 
         final itemCount = state.movies.length + (state.isLoadingMore ? 1 : 0);
 
-        return RefreshIndicator(
-          onRefresh: _onRefresh,
-          child: ListView.builder(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            itemCount: itemCount,
-            itemBuilder: (context, index) {
-              if (index >= state.movies.length) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                );
-              }
-              return MovieCard(movie: state.movies[index]);
-            },
-          ),
+        return StreamBuilder<FavoritesState>(
+          initialData: _favoritesCubit.state,
+          stream: _favoritesCubit.stream,
+          builder: (context, favoritesSnapshot) {
+            final favoritesState =
+                favoritesSnapshot.data ?? const FavoritesState();
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                itemCount: itemCount,
+                itemBuilder: (context, index) {
+                  if (index >= state.movies.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    );
+                  }
+                  final movie = state.movies[index];
+                  final isFavorite =
+                      favoritesState.favoriteIds.contains(movie.id);
+                  return MovieCard(
+                    movie: movie,
+                    isFavorite: isFavorite,
+                    onFavoriteTap: () {
+                      _favoritesCubit.toggleFavorite(
+                        FavoriteMovie(
+                          id: movie.id,
+                          title: movie.title,
+                          overview: movie.overview,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            );
+          },
         );
       },
     );

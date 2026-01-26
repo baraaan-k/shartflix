@@ -6,9 +6,13 @@ class MovieCard extends StatelessWidget {
   const MovieCard({
     super.key,
     required this.movie,
+    required this.isFavorite,
+    required this.onFavoriteTap,
   });
 
   final Movie movie;
+  final bool isFavorite;
+  final VoidCallback onFavoriteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +23,23 @@ class MovieCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              movie.title,
-              style: Theme.of(context).textTheme.titleMedium,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    movie.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  onPressed: onFavoriteTap,
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.redAccent : null,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(

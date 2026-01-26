@@ -12,6 +12,12 @@ import '../../features/home/data/datasources/movies_remote_data_source.dart';
 import '../../features/home/data/repositories/movies_repository_impl.dart';
 import '../../features/home/domain/repositories/movies_repository.dart';
 import '../../features/home/domain/usecases/get_movies_page_usecase.dart';
+import '../../features/favorites/data/datasources/favorites_local_data_source.dart';
+import '../../features/favorites/data/repositories/favorites_repository_impl.dart';
+import '../../features/favorites/domain/repositories/favorites_repository.dart';
+import '../../features/favorites/domain/usecases/get_favorites_usecase.dart';
+import '../../features/favorites/domain/usecases/toggle_favorite_usecase.dart';
+import '../../features/favorites/presentation/bloc/favorites_cubit.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -84,5 +90,23 @@ void setupDependencies() {
   );
   sl.registerLazySingleton<GetMoviesPageUseCase>(
     () => GetMoviesPageUseCase(sl.get<MoviesRepository>()),
+  );
+  sl.registerLazySingleton<FavoritesLocalDataSource>(
+    () => FavoritesLocalDataSourceImpl(),
+  );
+  sl.registerLazySingleton<FavoritesRepository>(
+    () => FavoritesRepositoryImpl(sl.get<FavoritesLocalDataSource>()),
+  );
+  sl.registerLazySingleton<GetFavoritesUseCase>(
+    () => GetFavoritesUseCase(sl.get<FavoritesRepository>()),
+  );
+  sl.registerLazySingleton<ToggleFavoriteUseCase>(
+    () => ToggleFavoriteUseCase(sl.get<FavoritesRepository>()),
+  );
+  sl.registerLazySingleton<FavoritesCubit>(
+    () => FavoritesCubit(
+      getFavoritesUseCase: sl.get<GetFavoritesUseCase>(),
+      toggleFavoriteUseCase: sl.get<ToggleFavoriteUseCase>(),
+    ),
   );
 }
