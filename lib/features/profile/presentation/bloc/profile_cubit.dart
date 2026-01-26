@@ -3,19 +3,27 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 
+import '../../domain/usecases/fetch_profile_usecase.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/set_avatar_usecase.dart';
+import '../../domain/usecases/upload_photo_usecase.dart';
 import 'profile_state.dart';
 
 class ProfileCubit {
   ProfileCubit({
     required GetProfileUseCase getProfileUseCase,
     required SetAvatarUseCase setAvatarUseCase,
+    required FetchProfileUseCase fetchProfileUseCase,
+    required UploadPhotoUseCase uploadPhotoUseCase,
   })  : _getProfileUseCase = getProfileUseCase,
-        _setAvatarUseCase = setAvatarUseCase;
+        _setAvatarUseCase = setAvatarUseCase,
+        _fetchProfileUseCase = fetchProfileUseCase,
+        _uploadPhotoUseCase = uploadPhotoUseCase;
 
   final GetProfileUseCase _getProfileUseCase;
   final SetAvatarUseCase _setAvatarUseCase;
+  final FetchProfileUseCase _fetchProfileUseCase;
+  final UploadPhotoUseCase _uploadPhotoUseCase;
 
   final StreamController<ProfileState> _controller =
       StreamController<ProfileState>.broadcast();
@@ -34,6 +42,9 @@ class ProfileCubit {
     if (_state.isLoading) return;
     _emit(_state.copyWith(isLoading: true, errorMessage: null));
     try {
+      try {
+        await _fetchProfileUseCase();
+      } catch (_) {}
       final user = await _getProfileUseCase();
       _emit(_state.copyWith(user: user, isLoading: false));
     } catch (error) {
@@ -57,10 +68,27 @@ class ProfileCubit {
       _emit(
         _state.copyWith(
           user: user,
-          isUpdatingAvatar: false,
           avatarRevision: DateTime.now().microsecondsSinceEpoch,
         ),
       );
+      try {
+        await _uploadPhotoUseCase(imageFile);
+        final updated = await _getProfileUseCase();
+        _emit(
+          _state.copyWith(
+            user: updated,
+            avatarRevision: DateTime.now().microsecondsSinceEpoch,
+          ),
+        );
+      } catch (error) {
+        _emit(
+          _state.copyWith(
+            errorMessage: error.toString(),
+          ),
+        );
+      } finally {
+        _emit(_state.copyWith(isUpdatingAvatar: false));
+      }
     } catch (error) {
       _emit(
         _state.copyWith(

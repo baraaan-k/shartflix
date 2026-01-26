@@ -10,6 +10,7 @@ class ProfileLocalDataSource {
   static const _avatarKey = 'avatarPath';
   static const _emailKey = 'email';
   static const _nameKey = 'name';
+  static const _photoUrlKey = 'photoUrl';
 
   static const _avatarDirName = 'profile';
   static const _avatarRelPath = 'profile/avatar.jpg';
@@ -86,6 +87,7 @@ class ProfileLocalDataSource {
         email: map[_emailKey] as String?,
         name: map[_nameKey] as String?,
         avatarPath: normalizedToStore,
+        photoUrl: map[_photoUrlKey] as String?,
       );
       await _writeProfile(fixed);
       AppLog.d('Profile', 'normalized avatarPath written: $normalizedToStore');
@@ -95,6 +97,7 @@ class ProfileLocalDataSource {
       email: map[_emailKey] as String?,
       name: map[_nameKey] as String?,
       avatarPath: resolvedAbs,
+      photoUrl: map[_photoUrlKey] as String?,
     );
   }
 
@@ -120,6 +123,19 @@ class ProfileLocalDataSource {
     final profile = await readProfile();
     await _writeProfile(profile.copyWith(avatarPath: _avatarRelPath));
     return targetAbs;
+  }
+
+  Future<void> savePhotoUrl(
+    String photoUrl, {
+    bool clearAvatarPath = false,
+  }) async {
+    final profile = await readProfile();
+    await _writeProfile(
+      profile.copyWith(
+        photoUrl: photoUrl,
+        avatarPath: clearAvatarPath ? null : ProfileLocalData._unset,
+      ),
+    );
   }
 
   Future<void> saveUserInfo({
@@ -156,6 +172,7 @@ class ProfileLocalDataSource {
       _emailKey: data.email,
       _nameKey: data.name,
       _avatarKey: toStore,
+      _photoUrlKey: data.photoUrl,
     });
 
     await file.writeAsString(payload, flush: true);
@@ -167,11 +184,13 @@ class ProfileLocalData {
     this.email,
     this.name,
     this.avatarPath,
+    this.photoUrl,
   });
 
   final String? email;
   final String? name;
   final String? avatarPath;
+  final String? photoUrl;
 
   static const _unset = Object();
 
@@ -179,11 +198,13 @@ class ProfileLocalData {
     String? email,
     String? name,
     Object? avatarPath = _unset,
+    Object? photoUrl = _unset,
   }) {
     return ProfileLocalData(
       email: email ?? this.email,
       name: name ?? this.name,
       avatarPath: avatarPath == _unset ? this.avatarPath : avatarPath as String?,
+      photoUrl: photoUrl == _unset ? this.photoUrl : photoUrl as String?,
     );
   }
 }

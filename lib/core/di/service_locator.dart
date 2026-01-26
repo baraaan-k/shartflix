@@ -8,6 +8,7 @@ import '../../features/auth/domain/usecases/get_token_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
+import '../network/api_client.dart';
 import '../../features/home/data/datasources/movies_remote_data_source.dart';
 import '../../features/home/data/repositories/movies_repository_impl.dart';
 import '../../features/home/domain/repositories/movies_repository.dart';
@@ -19,10 +20,13 @@ import '../../features/favorites/domain/usecases/get_favorites_usecase.dart';
 import '../../features/favorites/domain/usecases/toggle_favorite_usecase.dart';
 import '../../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../../features/profile/data/datasources/profile_local_data_source.dart';
+import '../../features/profile/data/datasources/profile_remote_data_source.dart';
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
+import '../../features/profile/domain/usecases/fetch_profile_usecase.dart';
 import '../../features/profile/domain/usecases/get_profile_usecase.dart';
 import '../../features/profile/domain/usecases/set_avatar_usecase.dart';
+import '../../features/profile/domain/usecases/upload_photo_usecase.dart';
 import '../../features/profile/presentation/bloc/profile_cubit.dart';
 import '../../features/offer/data/offer_flag_store.dart';
 import '../localization/app_locale_controller.dart';
@@ -70,11 +74,14 @@ void setupDependencies() {
       aOptions: AuthLocalDataSourceImpl.androidOptions,
     ),
   );
-  sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => FakeAuthRemoteDataSource(),
-  );
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sl.get<FlutterSecureStorage>()),
+  );
+  sl.registerLazySingleton<ApiClient>(
+    () => ApiClient(authLocalDataSource: sl.get<AuthLocalDataSource>()),
+  );
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(sl.get<ApiClient>()),
   );
   sl.registerLazySingleton<ProfileLocalDataSource>(
     () => ProfileLocalDataSource(),
@@ -128,21 +135,33 @@ void setupDependencies() {
       toggleFavoriteUseCase: sl.get<ToggleFavoriteUseCase>(),
     ),
   );
+  sl.registerLazySingleton<ProfileRemoteDataSource>(
+    () => ProfileRemoteDataSource(sl.get<ApiClient>()),
+  );
   sl.registerLazySingleton<ProfileRepository>(
     () => ProfileRepositoryImpl(
       profileLocalDataSource: sl.get<ProfileLocalDataSource>(),
+      profileRemoteDataSource: sl.get<ProfileRemoteDataSource>(),
     ),
   );
   sl.registerLazySingleton<GetProfileUseCase>(
     () => GetProfileUseCase(sl.get<ProfileRepository>()),
   );
+  sl.registerLazySingleton<FetchProfileUseCase>(
+    () => FetchProfileUseCase(sl.get<ProfileRepository>()),
+  );
   sl.registerLazySingleton<SetAvatarUseCase>(
     () => SetAvatarUseCase(sl.get<ProfileRepository>()),
+  );
+  sl.registerLazySingleton<UploadPhotoUseCase>(
+    () => UploadPhotoUseCase(sl.get<ProfileRepository>()),
   );
   sl.registerLazySingleton<ProfileCubit>(
     () => ProfileCubit(
       getProfileUseCase: sl.get<GetProfileUseCase>(),
       setAvatarUseCase: sl.get<SetAvatarUseCase>(),
+      fetchProfileUseCase: sl.get<FetchProfileUseCase>(),
+      uploadPhotoUseCase: sl.get<UploadPhotoUseCase>(),
     ),
   );
   sl.registerLazySingleton<OfferFlagStore>(

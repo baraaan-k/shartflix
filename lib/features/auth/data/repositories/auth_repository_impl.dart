@@ -21,13 +21,18 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final token = await _remote.login(email: email, password: password);
-    await _local.saveToken(token);
+    final response = await _remote.login(email: email, password: password);
+    if (response.token.isEmpty) {
+      throw Exception('Invalid token response');
+    }
+    await _local.saveToken(response.token);
     await _profileLocalDataSource.saveUserInfo(
-      email: email,
-      name: email.split('@').first,
+      email: response.user.email.isNotEmpty ? response.user.email : email,
+      name: response.user.name.isNotEmpty
+          ? response.user.name
+          : email.split('@').first,
     );
-    return token;
+    return response.token;
   }
 
   @override
@@ -36,14 +41,20 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final token = await _remote.register(
+    final response = await _remote.register(
       name: name,
       email: email,
       password: password,
     );
-    await _local.saveToken(token);
-    await _profileLocalDataSource.saveUserInfo(email: email, name: name);
-    return token;
+    if (response.token.isEmpty) {
+      throw Exception('Invalid token response');
+    }
+    await _local.saveToken(response.token);
+    await _profileLocalDataSource.saveUserInfo(
+      email: response.user.email.isNotEmpty ? response.user.email : email,
+      name: response.user.name.isNotEmpty ? response.user.name : name,
+    );
+    return response.token;
   }
 
   @override

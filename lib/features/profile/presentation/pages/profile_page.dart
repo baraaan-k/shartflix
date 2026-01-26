@@ -104,6 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 : l10n.profileGuest;
         final email = user?.email ?? '';
         final avatarPath = user?.avatarPath;
+        final photoUrl = user?.photoUrl;
         final selectedLocale =
             _localeController.locale.value ?? Localizations.localeOf(context);
         final dropdownLocale = selectedLocale.languageCode == 'tr'
@@ -124,10 +125,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     CircleAvatar(
                       key: ValueKey(profileState.avatarRevision),
                       radius: 36,
-                      backgroundImage: avatarPath != null
-                          ? FileImage(File(avatarPath))
-                          : null,
-                      child: avatarPath == null
+                      backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                          ? NetworkImage(photoUrl)
+                          : avatarPath != null
+                              ? FileImage(File(avatarPath))
+                              : null,
+                      child: (photoUrl == null || photoUrl.isEmpty) &&
+                              avatarPath == null
                           ? const Icon(Icons.person_outline, size: 36)
                           : null,
                     ),
