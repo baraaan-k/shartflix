@@ -3,7 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../core/router/app_router.dart';
-import '../core/theme/app_theme.dart';
+import '../features/auth/presentation/pages/auth_gate.dart';
+import '../theme/app_theme.dart';
 import '../core/di/service_locator.dart';
 import '../core/navigation/navigation_service.dart';
 import '../core/localization/app_locale_controller.dart';
@@ -22,9 +23,9 @@ class App extends StatelessWidget {
       builder: (context, locale, _) {
         return MaterialApp(
           title: 'Shartflix',
-          theme: AppTheme.light,
+          theme: AppTheme.dark(),
+          home: const AuthGate(),
           onGenerateRoute: AppRouter.onGenerateRoute,
-          initialRoute: AppRoutes.authGate,
           navigatorKey: navigationService.navigatorKey,
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,

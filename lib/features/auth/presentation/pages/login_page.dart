@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_spacing.dart';
+import '../../../../ui/components/app_button.dart';
+import '../../../../ui/components/app_text_field.dart';
+import '../../../../ui/primitives/app_card.dart';
+import '../../../../ui/primitives/app_text.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
@@ -73,9 +79,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      backgroundColor: AppColors.bg,
       body: StreamBuilder<AuthState>(
         initialData: _cubit.state,
         stream: _cubit.stream,
@@ -84,68 +88,94 @@ class _LoginPageState extends State<LoginPage> {
           final isLoading = state.status == AuthStatus.loading;
 
           return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Enter a valid email';
-                        }
-                        return null;
-                      },
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const AppText('Welcome back', style: AppTextStyle.h1),
+                        const SizedBox(height: AppSpacing.sm),
+                        const AppText(
+                          'Sign in to continue.',
+                          style: AppTextStyle.body,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        AppCard(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (state.status == AuthStatus.error &&
+                                  state.message != null) ...[
+                                AppText(
+                                  state.message!,
+                                  style: AppTextStyle.caption,
+                                  color: AppColors.danger,
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                              ],
+                              AppTextField(
+                                label: 'Email',
+                                hint: 'name@example.com',
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                prefixIconAsset: 'assets/icons/mail.svg',
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Email is required';
+                                  }
+                                  if (!value.contains('@')) {
+                                    return 'Enter a valid email';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                              AppTextField(
+                                label: 'Password',
+                                hint: '••••••••',
+                                controller: _passwordController,
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Password is required';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'Password must be at least 6 characters';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.xl),
+                              AppButton(
+                                label: 'Sign in',
+                                onPressed: isLoading ? null : _submit,
+                                isLoading: isLoading,
+                                variant: AppButtonVariant.primary,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              AppButton(
+                                label: 'Create account',
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        Navigator.of(context)
+                                            .pushNamed(AppRoutes.register);
+                                      },
+                                variant: AppButtonVariant.ghost,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Password is required';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _submit,
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Login'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              Navigator.of(context)
-                                  .pushNamed(AppRoutes.register);
-                            },
-                      child: const Text('Create an account'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
