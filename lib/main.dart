@@ -8,7 +8,7 @@ import 'app/app.dart';
 import 'core/di/service_locator.dart';
 import 'core/install/install_guard.dart';
 import 'core/localization/app_locale_controller.dart';
-import 'core/log/app_log.dart';
+import 'core/logging/logger_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,8 +30,8 @@ Future<void> _initFirebaseSafely() async {
           .recordError(error, stack, fatal: true);
       return true;
     };
-    AppLog.i('Firebase', 'Firebase initialized');
+    LoggerService.I.i('App started', tag: 'BOOT');
   } catch (e) {
-    AppLog.e('Firebase', 'Init failed: $e');
+    LoggerService.I.e('Firebase init failed', tag: 'BOOT', error: e);
   }
 }
