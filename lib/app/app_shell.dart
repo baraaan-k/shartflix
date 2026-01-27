@@ -4,11 +4,14 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../core/di/service_locator.dart';
 import '../features/auth/data/datasources/auth_local_data_source.dart';
 import '../features/offer/data/offer_flag_store.dart';
-import '../features/offer/presentation/limited_offer_sheet.dart';
+import '../screens/limited_offer_modal.dart';
 import '../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/profile/presentation/bloc/profile_cubit.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../ui/components/pill_tab_bar.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -24,7 +27,6 @@ class _AppShellState extends State<AppShell> {
     HomePage(),
     ProfilePage(),
   ];
-
 
   @override
   void initState() {
@@ -43,7 +45,7 @@ class _AppShellState extends State<AppShell> {
     if (token == null) return;
     final shown = await flagStore.isOfferShown();
     if (shown || !mounted) return;
-    await showLimitedOfferSheet(context);
+    await showLimitedOfferModal(context);
     await flagStore.markOfferShown();
   }
 
@@ -62,26 +64,43 @@ class _AppShellState extends State<AppShell> {
       l10n.bottomNavProfile,
     ];
     return Scaffold(
-      appBar: AppBar(
-        title: Text(titles[_currentIndex]),
-      ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTap,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_outlined),
-            label: l10n.bottomNavHome,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person_outline),
-            label: l10n.bottomNavProfile,
-          ),
-        ],
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: _pages,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.lg,
+              ),
+              child: SafeArea(
+                top: false,
+                child: PillTabBar(
+                  items: [
+                    PillTabItem(
+                      label: titles[0],
+                      iconAsset: 'assets/icons/home.svg',
+                    ),
+                    PillTabItem(
+                      label: titles[1],
+                      iconAsset: 'assets/icons/profile.svg',
+                    ),
+                  ],
+                  selectedIndex: _currentIndex,
+                  onChange: _onTap,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

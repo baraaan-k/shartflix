@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
-import 'app_radius.dart';
-import 'app_spacing.dart';
 import 'app_typography.dart';
 
 class AppTheme {
@@ -10,12 +8,10 @@ class AppTheme {
     final colorScheme = const ColorScheme.dark(
       primary: AppColors.brandRed,
       secondary: AppColors.brandRed2,
-      surface: AppColors.surface,
-      background: AppColors.bg,
+      surface: AppColors.bg,
       error: AppColors.danger,
       onPrimary: Colors.white,
       onSurface: AppColors.textPrimary,
-      onBackground: AppColors.textPrimary,
     );
 
     return ThemeData(

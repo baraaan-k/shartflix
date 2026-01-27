@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_radius.dart';
+import '../../../../theme/app_spacing.dart';
+import '../../../../ui/components/like_icon_pill.dart';
+import '../../../../ui/primitives/app_card.dart';
+import '../../../../ui/primitives/app_text.dart';
 import '../../domain/entities/movie.dart';
 
 class MovieCard extends StatelessWidget {
@@ -17,15 +23,18 @@ class MovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final posterUrl = movie.posterUrl;
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      child: AppCard(
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               child: SizedBox(
                 width: 60,
                 height: 90,
@@ -55,7 +64,7 @@ class MovieCard extends StatelessWidget {
                       ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,28 +73,27 @@ class MovieCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
+                        child: AppText(
                           movie.title,
+                          style: AppTextStyle.h2,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
-                      IconButton(
-                        onPressed: onFavoriteTap,
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.redAccent : null,
-                        ),
+                      const SizedBox(width: AppSpacing.sm),
+                      LikeIconPill(
+                        isLiked: isFavorite,
+                        onTap: onFavoriteTap,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: AppSpacing.sm),
+                  AppText(
                     movie.overview,
+                    style: AppTextStyle.body,
+                    color: AppColors.textSecondary,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),

@@ -83,11 +83,11 @@ class _AppTextFieldState extends State<AppTextField> {
                 : isFocused
                     ? AppColors.brandRed
                     : AppColors.borderSoft;
-        final textColor =
-            widget.enabled ? AppColors.textPrimary : AppColors.textSecondary;
-        final iconColor = widget.enabled
-            ? AppColors.textSecondary
-            : AppColors.textSecondary.withOpacity(0.6);
+    final textColor =
+        widget.enabled ? AppColors.textPrimary : AppColors.textSecondary;
+    final iconColor = widget.enabled
+        ? AppColors.textSecondary
+        : AppColors.textSecondary.withAlpha(153);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

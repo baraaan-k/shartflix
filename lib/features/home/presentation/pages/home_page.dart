@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_spacing.dart';
+import '../../../../ui/components/app_button.dart';
+import '../../../../ui/primitives/app_card.dart';
+import '../../../../ui/primitives/app_text.dart';
 import '../../../favorites/domain/entities/favorite_movie.dart';
 import '../../../favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../favorites/presentation/bloc/favorites_state.dart';
 import '../../../offer/data/offer_flag_store.dart';
-import '../../../offer/presentation/limited_offer_sheet.dart';
+import '../../../../screens/limited_offer_modal.dart';
 import '../../domain/usecases/get_movies_page_usecase.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -21,7 +26,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   late final HomeCubit _cubit;
   late final FavoritesCubit _favoritesCubit;
   late final OfferFlagStore _offerFlagStore;
@@ -99,6 +105,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return StreamBuilder<HomeState>(
       initialData: _cubit.state,
       stream: _cubit.stream,
@@ -151,7 +158,7 @@ class _HomePageState extends State<HomePage> {
                       title: l10n.offerBannerTitle,
                       subtitle: l10n.offerBannerSubtitle,
                       onTap: () async {
-                        await showLimitedOfferSheet(context);
+                        await showLimitedOfferModal(context);
                         await _offerFlagStore.markOfferShown();
                       },
                     );
@@ -193,6 +200,9 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _LimitedOfferBanner extends StatelessWidget {
@@ -209,13 +219,36 @@ class _LimitedOfferBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Card(
-        child: ListTile(
-          title: Text(title),
-          subtitle: Text(subtitle),
-          trailing: const Icon(Icons.arrow_forward),
-          onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AppCard(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(title, style: AppTextStyle.h2),
+                    const SizedBox(height: AppSpacing.xs),
+                    AppText(
+                      subtitle,
+                      style: AppTextStyle.caption,
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              const Icon(Icons.arrow_forward, color: AppColors.textSecondary),
+            ],
+          ),
         ),
       ),
     );
@@ -235,22 +268,23 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.movie_filter_outlined, size: 48),
-            const SizedBox(height: 12),
-            Text(
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
               title,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
+              style: AppTextStyle.h2,
+              align: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
+            const SizedBox(height: AppSpacing.xs),
+            AppText(
               subtitle,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
+              style: AppTextStyle.body,
+              color: AppColors.textSecondary,
+              align: TextAlign.center,
             ),
           ],
         ),
@@ -274,21 +308,22 @@ class _ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.warning_amber_rounded, size: 48),
-            const SizedBox(height: 12),
-            Text(
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
               message,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
+              style: AppTextStyle.h2,
+              align: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            OutlinedButton(
+            const SizedBox(height: AppSpacing.lg),
+            AppButton(
               onPressed: onRetry,
-              child: Text(retryLabel),
+              label: retryLabel,
+              variant: AppButtonVariant.secondary,
             ),
           ],
         ),
