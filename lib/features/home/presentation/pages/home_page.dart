@@ -10,6 +10,7 @@ import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_text.dart';
+import '../../../../ui/like_burst_overlay.dart';
 import '../../../favorites/domain/entities/favorite_movie.dart';
 import '../../../favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../favorites/presentation/bloc/favorites_state.dart';
@@ -200,12 +201,13 @@ class _HomePageState extends State<HomePage>
                                 favoritesState.favoriteIds.contains(movie.id);
                             return VerticalMovieCard(
                               movie: movie,
-                              isFavorite: isFavorite,
-                              onFavoriteTap: () {
-                                _favoritesCubit.toggleFavorite(
-                                  FavoriteMovie(
-                                    id: movie.id,
-                                    title: movie.title,
+                          isFavorite: isFavorite,
+                          onFavoriteTap: () {
+                            LikeBurstOverlay.maybeOf(context)?.play();
+                            _favoritesCubit.toggleFavorite(
+                              FavoriteMovie(
+                                id: movie.id,
+                                title: movie.title,
                                     overview: movie.overview,
                                     posterUrl: movie.posterUrl,
                                     images: movie.images,

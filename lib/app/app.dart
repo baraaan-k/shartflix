@@ -13,6 +13,7 @@ import '../core/localization/app_locale_controller.dart';
 import '../core/theme/app_theme_controller.dart';
 import '../core/theme/theme_binding.dart';
 import '../theme/app_colors.dart';
+import '../ui/like_burst_overlay.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -55,7 +56,9 @@ class App extends StatelessWidget {
               ],
               builder: (context, child) => ThemeBinding(
                 notifier: themeController.themeMode,
-                child: child ?? const SizedBox.shrink(),
+                child: LikeBurstOverlay(
+                  child: child ?? const SizedBox.shrink(),
+                ),
               ),
             );
           },

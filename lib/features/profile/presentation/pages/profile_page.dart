@@ -24,6 +24,7 @@ import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_text.dart';
+import '../../../../ui/like_burst_overlay.dart';
 import '../../../../screens/movie_detail_sheet.dart';
 import '../bloc/profile_cubit.dart';
 import '../bloc/profile_state.dart';
@@ -279,15 +280,18 @@ class _ProfilePageState extends State<ProfilePage> {
                           images: movie.images,
                         ),
                         isFavorite: true,
-                        onFavoriteTap: () => _favoritesCubit.toggleFavorite(
-                          FavoriteMovie(
-                            id: movie.id,
-                            title: movie.title,
-                            overview: movie.overview,
-                            posterUrl: movie.posterUrl,
-                            images: movie.images,
-                          ),
-                        ),
+                        onFavoriteTap: () {
+                          LikeBurstOverlay.maybeOf(context)?.play();
+                          _favoritesCubit.toggleFavorite(
+                            FavoriteMovie(
+                              id: movie.id,
+                              title: movie.title,
+                              overview: movie.overview,
+                              posterUrl: movie.posterUrl,
+                              images: movie.images,
+                            ),
+                          );
+                        },
                         onTap: () => showMovieDetailSheet(
                           context,
                           Movie(
