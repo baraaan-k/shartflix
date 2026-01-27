@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_router.dart';
@@ -78,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: StreamBuilder<AuthState>(
@@ -98,10 +100,10 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const AppText('Welcome back', style: AppTextStyle.h1),
+                        AppText(l10n.loginTitle, style: AppTextStyle.h1),
                         const SizedBox(height: AppSpacing.sm),
-                        const AppText(
-                          'Sign in to continue.',
+                        AppText(
+                          l10n.loginSubtitle,
                           style: AppTextStyle.body,
                           color: AppColors.textSecondary,
                         ),
@@ -121,47 +123,47 @@ class _LoginPageState extends State<LoginPage> {
                                 const SizedBox(height: AppSpacing.md),
                               ],
                               AppTextField(
-                                label: 'Email',
-                                hint: 'name@example.com',
+                                label: l10n.loginEmailLabel,
+                                hint: l10n.loginEmailHint,
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 prefixIconAsset: 'assets/icons/mail.svg',
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Email is required';
+                                    return l10n.loginEmailRequired;
                                   }
                                   if (!value.contains('@')) {
-                                    return 'Enter a valid email';
+                                    return l10n.loginEmailInvalid;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.lg),
                               AppTextField(
-                                label: 'Password',
-                                hint: '••••••••',
+                                label: l10n.loginPasswordLabel,
+                                hint: l10n.loginPasswordHint,
                                 controller: _passwordController,
                                 obscureText: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Password is required';
+                                    return l10n.loginPasswordRequired;
                                   }
                                   if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
+                                    return l10n.loginPasswordMin;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.xl),
                               AppButton(
-                                label: 'Sign in',
+                                label: l10n.loginCta,
                                 onPressed: isLoading ? null : _submit,
                                 isLoading: isLoading,
                                 variant: AppButtonVariant.primary,
                               ),
                               const SizedBox(height: AppSpacing.sm),
                               AppButton(
-                                label: 'Create account',
+                                label: l10n.loginCreateAccount,
                                 onPressed: isLoading
                                     ? null
                                     : () {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_binding.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
@@ -66,6 +67,7 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeBinding.of(context);
     return FormField<String>(
       initialValue: widget.controller?.text ?? '',
       validator: widget.validator,
@@ -134,7 +136,7 @@ class _AppTextFieldState extends State<AppTextField> {
                       style: TextStyle(color: textColor),
                       decoration: InputDecoration.collapsed(
                         hintText: widget.hint,
-                        hintStyle: const TextStyle(color: AppColors.muted),
+                        hintStyle: TextStyle(color: AppColors.muted),
                       ),
                       onChanged: (value) {
                         field.didChange(value);

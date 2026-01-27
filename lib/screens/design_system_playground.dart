@@ -141,18 +141,18 @@ class _DesignSystemPlaygroundState extends State<DesignSystemPlayground> {
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                AppText('Card Title', style: AppTextStyle.h2),
-                SizedBox(height: AppSpacing.sm),
+              children: [
+                const AppText('Card Title', style: AppTextStyle.h2),
+                const SizedBox(height: AppSpacing.sm),
                 AppText(
                   'This is a reusable card with border and shadow.',
                   style: AppTextStyle.body,
                   color: AppColors.textSecondary,
                 ),
-                SizedBox(height: AppSpacing.lg),
-                AppDivider(),
-                SizedBox(height: AppSpacing.lg),
-                AppText('Footer text', style: AppTextStyle.caption),
+                const SizedBox(height: AppSpacing.lg),
+                const AppDivider(),
+                const SizedBox(height: AppSpacing.lg),
+                const AppText('Footer text', style: AppTextStyle.caption),
               ],
             ),
           ),

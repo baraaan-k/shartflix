@@ -12,6 +12,7 @@ import '../features/profile/presentation/pages/profile_page.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../ui/components/pill_tab_bar.dart';
+import '../core/theme/app_theme_controller.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -63,45 +64,52 @@ class _AppShellState extends State<AppShell> {
       l10n.bottomNavHome,
       l10n.bottomNavProfile,
     ];
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: IndexedStack(
-                index: _currentIndex,
-                children: _pages,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
-                AppSpacing.lg,
-              ),
-              child: SafeArea(
-                top: false,
-                child: PillTabBar(
-                  items: [
-                    PillTabItem(
-                      label: titles[0],
-                      iconAsset: 'assets/icons/home.svg',
-                    ),
-                    PillTabItem(
-                      label: titles[1],
-                      iconAsset: 'assets/icons/profile.svg',
-                    ),
-                  ],
-                  selectedIndex: _currentIndex,
-                  onChange: _onTap,
+    final themeController =
+        ServiceLocator.instance.get<AppThemeController>();
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeController.themeMode,
+      builder: (context, _, __) {
+        return Scaffold(
+          backgroundColor: AppColors.bg,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: IndexedStack(
+                    index: _currentIndex,
+                    children: _pages,
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: PillTabBar(
+                      items: [
+                        PillTabItem(
+                          label: titles[0],
+                          iconAsset: 'assets/icons/home.svg',
+                        ),
+                        PillTabItem(
+                          label: titles[1],
+                          iconAsset: 'assets/icons/profile.svg',
+                        ),
+                      ],
+                      selectedIndex: _currentIndex,
+                      onChange: _onTap,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../core/theme/theme_binding.dart';
 class AppIcon extends StatelessWidget {
   const AppIcon(
     this.asset, {
@@ -15,6 +16,7 @@ class AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeBinding.of(context);
     return SvgPicture.asset(
       asset,
       width: size,

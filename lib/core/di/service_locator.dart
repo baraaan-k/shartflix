@@ -35,6 +35,7 @@ import '../../features/profile/presentation/bloc/profile_cubit.dart';
 import '../../features/offer/data/offer_flag_store.dart';
 import '../localization/app_locale_controller.dart';
 import '../localization/locale_prefs_store.dart';
+import '../theme/app_theme_controller.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -198,5 +199,8 @@ void setupDependencies() {
   );
   sl.registerLazySingleton<AppLocaleController>(
     () => AppLocaleController(sl.get<LocalePrefsStore>()),
+  );
+  sl.registerLazySingleton<AppThemeController>(
+    () => AppThemeController(),
   );
 }

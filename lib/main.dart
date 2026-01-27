@@ -8,17 +8,30 @@ import 'app/app.dart';
 import 'core/di/service_locator.dart';
 import 'core/install/install_guard.dart';
 import 'core/localization/app_locale_controller.dart';
+import 'core/log/app_log.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
   setupDependencies();
   await InstallGuard.ensureFreshInstallCleanup();
   await ServiceLocator.instance.get<AppLocaleController>().load();
+  await _initFirebaseSafely();
   runApp(const App());
+}
+
+Future<void> _initFirebaseSafely() async {
+  try {
+    await Firebase.initializeApp()
+        .timeout(const Duration(seconds: 8));
+    FlutterError.onError =
+        FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance
+          .recordError(error, stack, fatal: true);
+      return true;
+    };
+    AppLog.i('Firebase', 'Firebase initialized');
+  } catch (e) {
+    AppLog.e('Firebase', 'Init failed: $e');
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_binding.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
@@ -11,7 +12,7 @@ class AppCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.borderColor,
     this.backgroundColor,
-    this.shadows = AppShadows.softCard,
+    this.shadows,
     this.radius = AppRadius.md,
   });
 
@@ -19,18 +20,19 @@ class AppCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final Color? borderColor;
   final Color? backgroundColor;
-  final List<BoxShadow> shadows;
+  final List<BoxShadow>? shadows;
   final double radius;
 
   @override
   Widget build(BuildContext context) {
+    ThemeBinding.of(context);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.surface,
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: borderColor ?? AppColors.borderSoft),
-        boxShadow: shadows,
+        boxShadow: shadows ?? AppShadows.softCard,
       ),
       child: child,
     );

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_router.dart';
@@ -81,6 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: StreamBuilder<AuthState>(
@@ -101,10 +103,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const AppText('Create account', style: AppTextStyle.h1),
+                        AppText(l10n.registerTitle, style: AppTextStyle.h1),
                         const SizedBox(height: AppSpacing.sm),
-                        const AppText(
-                          'Start your Shartflix journey.',
+                        AppText(
+                          l10n.registerSubtitle,
                           style: AppTextStyle.body,
                           color: AppColors.textSecondary,
                         ),
@@ -124,61 +126,61 @@ class _RegisterPageState extends State<RegisterPage> {
                                 const SizedBox(height: AppSpacing.md),
                               ],
                               AppTextField(
-                                label: 'Name',
-                                hint: 'Your name',
+                                label: l10n.registerNameLabel,
+                                hint: l10n.registerNameHint,
                                 controller: _nameController,
                                 textCapitalization:
                                     TextCapitalization.words,
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Name is required';
+                                    return l10n.registerNameRequired;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.lg),
                               AppTextField(
-                                label: 'Email',
-                                hint: 'name@example.com',
+                                label: l10n.registerEmailLabel,
+                                hint: l10n.registerEmailHint,
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 prefixIconAsset: 'assets/icons/mail.svg',
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Email is required';
+                                    return l10n.registerEmailRequired;
                                   }
                                   if (!value.contains('@')) {
-                                    return 'Enter a valid email';
+                                    return l10n.registerEmailInvalid;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.lg),
                               AppTextField(
-                                label: 'Password',
-                                hint: '••••••••',
+                                label: l10n.registerPasswordLabel,
+                                hint: l10n.registerPasswordHint,
                                 controller: _passwordController,
                                 obscureText: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Password is required';
+                                    return l10n.registerPasswordRequired;
                                   }
                                   if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
+                                    return l10n.registerPasswordMin;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.xl),
                               AppButton(
-                                label: 'Create account',
+                                label: l10n.registerCta,
                                 onPressed: isLoading ? null : _submit,
                                 isLoading: isLoading,
                                 variant: AppButtonVariant.primary,
                               ),
                               const SizedBox(height: AppSpacing.sm),
                               AppButton(
-                                label: 'Already have an account? Sign in',
+                                label: l10n.registerHaveAccount,
                                 onPressed: isLoading
                                     ? null
                                     : () {

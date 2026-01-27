@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_binding.dart';
 import '../../theme/app_typography.dart';
 
 enum AppTextStyle {
@@ -45,6 +46,7 @@ class AppText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeBinding.of(context);
     final base = _resolveStyle();
     return Text(
       text,
