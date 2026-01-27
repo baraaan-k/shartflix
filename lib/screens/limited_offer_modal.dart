@@ -12,6 +12,7 @@ import '../ui/primitives/app_text.dart';
 
 Future<void> showLimitedOfferModal(BuildContext context) async {
   bool isSelected = false;
+  final l10n = AppLocalizations.of(context)!;
   final result = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: true,
@@ -40,7 +41,7 @@ Future<void> showLimitedOfferModal(BuildContext context) async {
                         children: [
                           Row(
                             children: [
-                              _OfferTag(text: 'LIMITED OFFER'),
+                          _OfferTag(text: l10n.limitedOfferTitle.toUpperCase()),
                               const Spacer(),
                               IconButton(
                                 onPressed: () =>
@@ -51,10 +52,10 @@ Future<void> showLimitedOfferModal(BuildContext context) async {
                             ],
                           ),
                           const SizedBox(height: AppSpacing.xs),
-                          const AppText('Unlock Premium', style: AppTextStyle.h1),
+                          AppText(l10n.limitedOfferHeadline, style: AppTextStyle.h1),
                           const SizedBox(height: AppSpacing.xs),
-                          const AppText(
-                            'Limited-time deal — save up to 70% today.',
+                          AppText(
+                            l10n.limitedOfferHeroSubtitle,
                             style: AppTextStyle.body,
                             color: AppColors.textSecondary,
                           ),
@@ -68,14 +69,14 @@ Future<void> showLimitedOfferModal(BuildContext context) async {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xl),
-                          const _OfferBullet(text: 'Ad-free experience'),
-                          const _OfferBullet(text: 'Exclusive content'),
-                          const _OfferBullet(text: 'Cancel anytime'),
+                          _OfferBullet(text: l10n.limitedOfferBenefit1),
+                          _OfferBullet(text: l10n.limitedOfferBenefit2),
+                          _OfferBullet(text: l10n.limitedOfferBenefit3),
                           const SizedBox(height: AppSpacing.sm),
                           SizedBox(
                             width: double.infinity,
                             child: AppButton(
-                              label: 'Get Limited Offer',
+                              label: l10n.limitedOfferPrimaryCta,
                               onPressed: isSelected
                                   ? () => Navigator.of(sheetContext).pop(true)
                                   : null,
@@ -84,8 +85,8 @@ Future<void> showLimitedOfferModal(BuildContext context) async {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xs),
-                          const AppText(
-                            'By continuing you agree to Terms.',
+                          AppText(
+                            l10n.limitedOfferDisclaimer,
                             style: AppTextStyle.caption,
                             color: AppColors.muted,
                             align: TextAlign.center,

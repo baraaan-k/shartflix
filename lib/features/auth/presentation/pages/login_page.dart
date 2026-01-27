@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
-import '../../../../core/router/app_router.dart';
+import '../../../../app/router/app_router.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
@@ -55,10 +57,7 @@ class _LoginPageState extends State<LoginPage> {
   void _handleState(AuthState state) {
     if (!mounted) return;
     if (state.status == AuthStatus.authenticated) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRoutes.shell,
-        (route) => false,
-      );
+      context.goNamed(AppRouteNames.shell);
     } else if (state.status == AuthStatus.error && state.message != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.message!)),
@@ -78,6 +77,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: StreamBuilder<AuthState>(
@@ -98,10 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const AppText('Welcome back', style: AppTextStyle.h1),
+                        AppText(l10n.loginTitle, style: AppTextStyle.h1),
                         const SizedBox(height: AppSpacing.sm),
-                        const AppText(
-                          'Sign in to continue.',
+                        AppText(
+                          l10n.loginSubtitle,
                           style: AppTextStyle.body,
                           color: AppColors.textSecondary,
                         ),
@@ -121,52 +121,53 @@ class _LoginPageState extends State<LoginPage> {
                                 const SizedBox(height: AppSpacing.md),
                               ],
                               AppTextField(
-                                label: 'Email',
-                                hint: 'name@example.com',
+                                label: l10n.loginEmailLabel,
+                                hint: l10n.loginEmailHint,
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 prefixIconAsset: 'assets/icons/mail.svg',
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Email is required';
+                                    return l10n.loginEmailRequired;
                                   }
                                   if (!value.contains('@')) {
-                                    return 'Enter a valid email';
+                                    return l10n.loginEmailInvalid;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.lg),
                               AppTextField(
-                                label: 'Password',
-                                hint: '••••••••',
+                                label: l10n.loginPasswordLabel,
+                                hint: l10n.loginPasswordHint,
                                 controller: _passwordController,
                                 obscureText: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Password is required';
+                                    return l10n.loginPasswordRequired;
                                   }
                                   if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
+                                    return l10n.loginPasswordMin;
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: AppSpacing.xl),
                               AppButton(
-                                label: 'Sign in',
+                                label: l10n.loginCta,
                                 onPressed: isLoading ? null : _submit,
                                 isLoading: isLoading,
                                 variant: AppButtonVariant.primary,
                               ),
                               const SizedBox(height: AppSpacing.sm),
                               AppButton(
-                                label: 'Create account',
+                                label: l10n.loginCreateAccount,
                                 onPressed: isLoading
                                     ? null
                                     : () {
-                                        Navigator.of(context)
-                                            .pushNamed(AppRoutes.register);
+                                        context.pushNamed(
+                                          AppRouteNames.register,
+                                        );
                                       },
                                 variant: AppButtonVariant.ghost,
                               ),

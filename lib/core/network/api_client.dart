@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../log/app_log.dart';
+import '../logging/logger_service.dart';
 import '../navigation/navigation_service.dart';
 import '../../features/auth/data/datasources/auth_local_data_source.dart';
 import '../../features/profile/data/datasources/profile_local_data_source.dart';
@@ -49,7 +49,7 @@ class ApiClient {
       }
     }
     final payload = jsonEncode(body);
-    AppLog.d('Api', 'POST $path');
+    LoggerService.I.d('POST $path', tag: 'API');
     request.add(utf8.encode(payload));
     final response = await request.close();
     return _handleResponse(response, path);
@@ -68,7 +68,7 @@ class ApiClient {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       }
     }
-    AppLog.d('Api', 'GET $path');
+    LoggerService.I.d('GET $path', tag: 'API');
     final response = await request.close();
     return _handleResponse(response, path);
   }
@@ -92,7 +92,7 @@ class ApiClient {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       }
     }
-    AppLog.d('Api', 'POST $path (multipart)');
+    LoggerService.I.d('POST $path (multipart)', tag: 'API');
     final fileName = file.uri.pathSegments.last;
     request.add(utf8.encode('--$boundary\r\n'));
     request.add(utf8.encode(
@@ -111,7 +111,8 @@ class ApiClient {
   ) async {
     final status = response.statusCode;
     final body = await response.transform(utf8.decoder).join();
-    AppLog.d('Api', '$path -> $status body: $body');
+    LoggerService.I.i('$path -> $status', tag: 'API');
+    LoggerService.I.d('body: $body', tag: 'API');
     final decoded = _safeDecode(body);
     if (_isEnvelope(decoded)) {
       final response = decoded!['response'];
@@ -122,6 +123,12 @@ class ApiClient {
       if (code != 200 && code != 201) {
         final message = _extractErrorMessage(decoded, body) ??
             'Request failed with status $status';
+        LoggerService.I.e(
+          'Request failed',
+          tag: 'API',
+          error: message,
+          stackTrace: StackTrace.current,
+        );
         throw ApiException(code ?? status, message);
       }
     }
@@ -135,6 +142,12 @@ class ApiClient {
           (errorBody.isNotEmpty
               ? errorBody
               : 'Request failed with status $status');
+      LoggerService.I.e(
+        'Request failed',
+        tag: 'API',
+        error: message,
+        stackTrace: StackTrace.current,
+      );
       throw ApiException(status, message);
     }
     return decoded ?? <String, dynamic>{};

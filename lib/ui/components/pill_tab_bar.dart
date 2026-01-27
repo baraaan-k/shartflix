@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_binding.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
@@ -31,6 +32,7 @@ class PillTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeBinding.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
@@ -58,7 +60,7 @@ class PillTabBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                   gradient: selected
-                      ? const LinearGradient(
+                      ? LinearGradient(
                           colors: [AppColors.brandRed, AppColors.brandRed2],
                         )
                       : null,

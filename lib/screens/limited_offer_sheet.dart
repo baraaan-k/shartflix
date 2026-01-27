@@ -84,12 +84,12 @@ Future<void> showLimitedOfferSheet(BuildContext context) async {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                      const AppText(
-                        'By continuing you agree to Terms.',
-                        style: AppTextStyle.caption,
-                        color: AppColors.muted,
-                        align: TextAlign.center,
-                      ),
+                    AppText(
+                      'By continuing you agree to Terms.',
+                      style: AppTextStyle.caption,
+                      color: AppColors.muted,
+                      align: TextAlign.center,
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     Center(
                       child: AppButton(
@@ -127,7 +127,7 @@ class _OfferBullet extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          const AppIcon(
+          AppIcon(
             'assets/icons/check_on.svg',
             size: AppSpacing.iconMd,
             color: AppColors.success,
@@ -203,15 +203,15 @@ class _SingleOfferCard extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      AppText('Premium Pack', style: AppTextStyle.h2),
-                      SizedBox(height: AppSpacing.xs),
+                    children: [
+                      const AppText('Premium Pack', style: AppTextStyle.h2),
+                      const SizedBox(height: AppSpacing.xs),
                       AppText(
                         '300 Coins + bonus',
                         style: AppTextStyle.caption,
                         color: AppColors.textSecondary,
                       ),
-                      SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.md),
                       AppText(
                         '\$19.99',
                         style: AppTextStyle.h1,

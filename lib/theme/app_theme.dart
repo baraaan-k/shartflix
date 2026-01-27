@@ -6,24 +6,66 @@ import 'app_typography.dart';
 class AppTheme {
   static ThemeData dark() {
     final colorScheme = const ColorScheme.dark(
-      primary: AppColors.brandRed,
-      secondary: AppColors.brandRed2,
-      surface: AppColors.bg,
-      error: AppColors.danger,
+      primary: AppColorsDark.brandRed,
+      secondary: AppColorsDark.brandRed2,
+      surface: AppColorsDark.bg,
+      error: AppColorsDark.danger,
       onPrimary: Colors.white,
-      onSurface: AppColors.textPrimary,
+      onSurface: AppColorsDark.textPrimary,
     );
 
     return ThemeData(
       brightness: Brightness.dark,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: AppColors.bg,
+      scaffoldBackgroundColor: AppColorsDark.bg,
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.bg,
+        backgroundColor: AppColorsDark.bg,
         elevation: 0,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: AppColorsDark.textPrimary,
       ),
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
+        headlineLarge: AppTypography.h1,
+        headlineMedium: AppTypography.h2,
+        bodyMedium: AppTypography.body,
+        labelLarge: AppTypography.button,
+        bodySmall: AppTypography.caption,
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: false,
+        fillColor: Colors.transparent,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
+        isDense: true,
+        isCollapsed: true,
+        contentPadding: EdgeInsets.zero,
+      ),
+    );
+  }
+
+  static ThemeData light() {
+    final colorScheme = const ColorScheme.light(
+      primary: AppColorsLight.brandRed,
+      secondary: AppColorsLight.brandRed2,
+      surface: AppColorsLight.bg,
+      error: AppColorsLight.danger,
+      onPrimary: Colors.white,
+      onSurface: AppColorsLight.textPrimary,
+    );
+
+    return ThemeData(
+      brightness: Brightness.light,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: AppColorsLight.bg,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColorsLight.bg,
+        elevation: 0,
+        foregroundColor: AppColorsLight.textPrimary,
+      ),
+      textTheme: TextTheme(
         headlineLarge: AppTypography.h1,
         headlineMedium: AppTypography.h2,
         bodyMedium: AppTypography.body,

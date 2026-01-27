@@ -69,3 +69,7 @@ ios/**/DerivedData/
 *.crt
 *.key
 secrets/
+
+flutter_*.log
+*.log
+

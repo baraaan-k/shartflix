@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_text.dart';
+import '../../../../ui/like_burst_overlay.dart';
 import '../../../favorites/domain/entities/favorite_movie.dart';
 import '../../../favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../favorites/presentation/bloc/favorites_state.dart';
@@ -108,113 +110,121 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = AppLocalizations.of(context)!;
-    return StreamBuilder<HomeState>(
-      initialData: _cubit.state,
-      stream: _cubit.stream,
-      builder: (context, snapshot) {
-        final state = snapshot.data ?? const HomeState();
-        if (state.status == HomeStatus.loading && state.movies.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state.status == HomeStatus.error && state.movies.isEmpty) {
-          return _RefreshableState(
-            onRefresh: _onRefresh,
-            child: _ErrorState(
-              message: l10n.homeErrorTitle,
-              retryLabel: l10n.commonRetry,
-              onRetry: _cubit.loadInitial,
-            ),
-          );
-        }
-        if (state.status == HomeStatus.empty) {
-          return _RefreshableState(
-            onRefresh: _onRefresh,
-            child: _EmptyState(
-              title: l10n.homeEmptyTitle,
-              subtitle: l10n.homeEmptySubtitle,
-            ),
-          );
-        }
+    final themeController =
+        ServiceLocator.instance.get<AppThemeController>();
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeController.themeMode,
+      builder: (context, _, __) {
+        return StreamBuilder<HomeState>(
+          initialData: _cubit.state,
+          stream: _cubit.stream,
+          builder: (context, snapshot) {
+            final state = snapshot.data ?? const HomeState();
+            if (state.status == HomeStatus.loading && state.movies.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.status == HomeStatus.error && state.movies.isEmpty) {
+              return _RefreshableState(
+                onRefresh: _onRefresh,
+                child: _ErrorState(
+                  message: l10n.homeErrorTitle,
+                  retryLabel: l10n.commonRetry,
+                  onRetry: _cubit.loadInitial,
+                ),
+              );
+            }
+            if (state.status == HomeStatus.empty) {
+              return _RefreshableState(
+                onRefresh: _onRefresh,
+                child: _EmptyState(
+                  title: l10n.homeEmptyTitle,
+                  subtitle: l10n.homeEmptySubtitle,
+                ),
+              );
+            }
 
-        final itemCount =
-            state.movies.length + (state.isLoadingMore ? 1 : 0) + 1;
+            final itemCount =
+                state.movies.length + (state.isLoadingMore ? 1 : 0) + 1;
 
-        return Column(
-          children: [
-            AppBar(
-              centerTitle: true,
-              title: const AppText(
-                'Shartflix',
-                style: AppTextStyle.h2,
-              ),
-            ),
-            Expanded(
-              child: StreamBuilder<FavoritesState>(
-                initialData: _favoritesCubit.state,
-                stream: _favoritesCubit.stream,
-                builder: (context, favoritesSnapshot) {
-                  final favoritesState =
-                      favoritesSnapshot.data ?? const FavoritesState();
-                  return RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                      itemCount: itemCount,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return _LimitedOfferBanner(
-                            title: l10n.offerBannerTitle,
-                            subtitle: l10n.offerBannerSubtitle,
-                            onTap: () async {
-                              await showLimitedOfferModal(context);
-                              await _offerFlagStore.markOfferShown();
-                            },
-                          );
-                        }
-                        final movieIndex = index - 1;
-                        if (movieIndex >= state.movies.length) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(
-                              child: SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+            return Column(
+              children: [
+                AppBar(
+                  centerTitle: true,
+                  title: AppText(
+                    'Shartflix',
+                    style: AppTextStyle.h2,
+                  ),
+                ),
+                Expanded(
+                  child: StreamBuilder<FavoritesState>(
+                    initialData: _favoritesCubit.state,
+                    stream: _favoritesCubit.stream,
+                    builder: (context, favoritesSnapshot) {
+                      final favoritesState =
+                          favoritesSnapshot.data ?? const FavoritesState();
+                      return RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          itemCount: itemCount,
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return _LimitedOfferBanner(
+                                title: l10n.offerBannerTitle,
+                                subtitle: l10n.offerBannerSubtitle,
+                                onTap: () async {
+                                  await showLimitedOfferModal(context);
+                                  await _offerFlagStore.markOfferShown();
+                                },
+                              );
+                            }
+                            final movieIndex = index - 1;
+                            if (movieIndex >= state.movies.length) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }
-                        final movie = state.movies[movieIndex];
-                        final isFavorite =
-                            favoritesState.favoriteIds.contains(movie.id);
-                        return VerticalMovieCard(
-                          movie: movie,
+                              );
+                            }
+                            final movie = state.movies[movieIndex];
+                            final isFavorite =
+                                favoritesState.favoriteIds.contains(movie.id);
+                            return VerticalMovieCard(
+                              movie: movie,
                           isFavorite: isFavorite,
                           onFavoriteTap: () {
+                            LikeBurstOverlay.maybeOf(context)?.play();
                             _favoritesCubit.toggleFavorite(
                               FavoriteMovie(
                                 id: movie.id,
                                 title: movie.title,
-                                overview: movie.overview,
-                                posterUrl: movie.posterUrl,
-                                images: movie.images,
-                              ),
+                                    overview: movie.overview,
+                                    posterUrl: movie.posterUrl,
+                                    images: movie.images,
+                                  ),
+                                );
+                              },
+                          onTap: () => showMovieDetailSheet(context, movie),
                             );
                           },
-                          onTap: () => showMovieDetailSheet(context, movie),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -266,7 +276,7 @@ class _LimitedOfferBanner extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.arrow_forward, color: AppColors.brandRed),
+              Icon(Icons.arrow_forward, color: AppColors.brandRed),
             ],
           ),
         ),

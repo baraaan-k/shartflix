@@ -8,7 +8,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/localization/app_locale_controller.dart';
-import '../../../../core/router/app_router.dart';
+import '../../../../app/router/app_router.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../../../features/favorites/domain/entities/favorite_movie.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_cubit.dart';
@@ -21,6 +23,7 @@ import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_text.dart';
+import '../../../../ui/like_burst_overlay.dart';
 import '../../../../screens/movie_detail_sheet.dart';
 import '../bloc/profile_cubit.dart';
 import '../bloc/profile_state.dart';
@@ -36,6 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late final FavoritesCubit _favoritesCubit;
   late final ProfileCubit _profileCubit;
   late final AppLocaleController _localeController;
+  late final AppThemeController _themeController;
 
   StreamSubscription<FavoritesState>? _subscription;
   StreamSubscription<ProfileState>? _profileSubscription;
@@ -49,6 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _favoritesCubit = ServiceLocator.instance.get<FavoritesCubit>();
     _profileCubit = ServiceLocator.instance.get<ProfileCubit>();
     _localeController = ServiceLocator.instance.get<AppLocaleController>();
+    _themeController = ServiceLocator.instance.get<AppThemeController>();
 
     _subscription = _favoritesCubit.stream.listen(_handleFavoritesState);
     _profileSubscription = _profileCubit.stream.listen(_handleProfileState);
@@ -108,38 +113,56 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return StreamBuilder<ProfileState>(
-      initialData: _profileCubit.state,
-      stream: _profileCubit.stream,
-      builder: (context, profileSnapshot) {
-        final profileState = profileSnapshot.data ?? const ProfileState();
-        final user = profileState.user;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: _themeController.themeMode,
+      builder: (context, _, __) {
+        return StreamBuilder<ProfileState>(
+          initialData: _profileCubit.state,
+          stream: _profileCubit.stream,
+          builder: (context, profileSnapshot) {
+            final profileState = profileSnapshot.data ?? const ProfileState();
+            final user = profileState.user;
 
-        final hasName = user?.name?.trim().isNotEmpty ?? false;
-        final hasEmail = user?.email.trim().isNotEmpty ?? false;
+            final hasName = user?.name?.trim().isNotEmpty ?? false;
+            final hasEmail = user?.email.trim().isNotEmpty ?? false;
 
-        final displayName = hasName
-            ? user!.name!
-            : hasEmail
-                ? user!.email.split('@').first
-                : l10n.profileGuest;
+            final displayName = hasName
+                ? user!.name!
+                : hasEmail
+                    ? user!.email.split('@').first
+                    : l10n.profileGuest;
 
-        final email = user?.email ?? '';
-        final avatarPath = user?.avatarPath;
-        final photoUrl = user?.photoUrl;
+            final email = user?.email ?? '';
+            final avatarPath = user?.avatarPath;
+            final photoUrl = user?.photoUrl;
 
-        final hasImage = (photoUrl != null && photoUrl.isNotEmpty) ||
-            (avatarPath != null && avatarPath.isNotEmpty);
+            final hasImage = (photoUrl != null && photoUrl.isNotEmpty) ||
+                (avatarPath != null && avatarPath.isNotEmpty);
 
-        return StreamBuilder<FavoritesState>(
-          initialData: _favoritesCubit.state,
-          stream: _favoritesCubit.stream,
-          builder: (context, snapshot) {
-            final favState = snapshot.data ?? const FavoritesState();
+            return StreamBuilder<FavoritesState>(
+              initialData: _favoritesCubit.state,
+              stream: _favoritesCubit.stream,
+              builder: (context, snapshot) {
+                final favState = snapshot.data ?? const FavoritesState();
 
-            return Scaffold(
-              backgroundColor: AppColors.bg,
-              appBar: AppBar(
+                return Scaffold(
+                  backgroundColor: AppColors.bg,
+                  appBar: AppBar(
+                    leading: ValueListenableBuilder<ThemeMode>(
+                      valueListenable: _themeController.themeMode,
+                  builder: (context, mode, _) {
+                    final isDark = mode == ThemeMode.dark;
+                    return IconButton(
+                      onPressed: _themeController.toggle,
+                      icon: Icon(
+                        isDark
+                            ? Icons.light_mode_outlined
+                            : Icons.dark_mode_outlined,
+                      ),
+                      color: AppColors.textSecondary,
+                    );
+                  },
+                ),
                 title: AppText(l10n.profileTitle, style: AppTextStyle.h2),
                 actions: [
                   IconButton(
@@ -211,11 +234,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     .get<LogoutUseCase>();
                                             await logout();
                                             if (!context.mounted) return;
-                                            Navigator.of(context)
-                                                .pushNamedAndRemoveUntil(
-                                              AppRoutes.login,
-                                              (route) => false,
-                                            );
+                                            context.goNamed(AppRouteNames.login);
                                           },
                                           variant: AppButtonVariant.ghost,
                                         ),
@@ -256,15 +275,18 @@ class _ProfilePageState extends State<ProfilePage> {
                           images: movie.images,
                         ),
                         isFavorite: true,
-                        onFavoriteTap: () => _favoritesCubit.toggleFavorite(
-                          FavoriteMovie(
-                            id: movie.id,
-                            title: movie.title,
-                            overview: movie.overview,
-                            posterUrl: movie.posterUrl,
-                            images: movie.images,
-                          ),
-                        ),
+                        onFavoriteTap: () {
+                          LikeBurstOverlay.maybeOf(context)?.play();
+                          _favoritesCubit.toggleFavorite(
+                            FavoriteMovie(
+                              id: movie.id,
+                              title: movie.title,
+                              overview: movie.overview,
+                              posterUrl: movie.posterUrl,
+                              images: movie.images,
+                            ),
+                          );
+                        },
                         onTap: () => showMovieDetailSheet(
                           context,
                           Movie(
@@ -281,6 +303,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: AppSpacing.lg),
                 ],
               ),
+            );
+              },
             );
           },
         );
@@ -337,10 +361,10 @@ class _AvatarBox extends StatelessWidget {
                     : SvgPicture.asset(
                         'assets/images/upload.svg',
                         fit: BoxFit.cover,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.textSecondary,
-                          BlendMode.srcIn,
-                        ),
+                      colorFilter: ColorFilter.mode(
+                        AppColors.textSecondary,
+                        BlendMode.srcIn,
+                      ),
                       ),
               ),
 
@@ -360,7 +384,7 @@ class _AvatarBox extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.borderSoft),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.close,
                           size: 16,
                           color: AppColors.textSecondary,

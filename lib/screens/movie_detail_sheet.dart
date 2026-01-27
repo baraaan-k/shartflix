@@ -57,13 +57,14 @@ Future<void> showMovieDetailSheet(BuildContext context, Movie movie) async {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(AppRadius.lg),
+                          clipBehavior: Clip.antiAlias,
                           child: SizedBox(
                             width: double.infinity,
                             child: movie.posterUrl != null &&
                                     movie.posterUrl!.isNotEmpty
                                 ? Image.network(
                                     movie.posterUrl!,
-                                    fit: BoxFit.contain,
+                                    fit: BoxFit.cover,
                                   )
                                 : const Center(
                                     child: Icon(

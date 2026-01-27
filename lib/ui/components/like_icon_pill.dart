@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_binding.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
@@ -25,6 +26,7 @@ class LikeIconPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeBinding.of(context);
     final borderColor = isLiked ? Colors.white : Colors.grey;
     final borderWidth = isLiked ? 0.6 : 0.3;
     final iconColor = isLiked ? AppColors.brandRed : AppColors.textSecondary;
@@ -48,7 +50,7 @@ class LikeIconPill extends StatelessWidget {
                   _filledHeartSvg,
                   width: AppSpacing.iconLg,
                   height: AppSpacing.iconLg,
-                  colorFilter: const ColorFilter.mode(
+                  colorFilter: ColorFilter.mode(
                     AppColors.brandRed,
                     BlendMode.srcIn,
                   ),
