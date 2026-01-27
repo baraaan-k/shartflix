@@ -48,6 +48,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -72,6 +74,20 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/branding/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/branding/shartflix_app_icon_1024.png
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/branding/splash_logo_1024.png
+  android_12:
+    color: "#000000"
+    image: assets/branding/splash_logo_1024.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
