@@ -17,7 +17,8 @@ import '../../../../screens/limited_offer_modal.dart';
 import '../../domain/usecases/get_movies_page_usecase.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
-import '../widgets/movie_card.dart';
+import '../widgets/vertical_movie_card.dart';
+import '../../../../screens/movie_detail_sheet.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -106,12 +107,12 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<HomeState>(
       initialData: _cubit.state,
       stream: _cubit.stream,
       builder: (context, snapshot) {
         final state = snapshot.data ?? const HomeState();
-        final l10n = AppLocalizations.of(context)!;
         if (state.status == HomeStatus.loading && state.movies.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -138,64 +139,82 @@ class _HomePageState extends State<HomePage>
         final itemCount =
             state.movies.length + (state.isLoadingMore ? 1 : 0) + 1;
 
-        return StreamBuilder<FavoritesState>(
-          initialData: _favoritesCubit.state,
-          stream: _favoritesCubit.stream,
-          builder: (context, favoritesSnapshot) {
-            final favoritesState =
-                favoritesSnapshot.data ?? const FavoritesState();
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                itemCount: itemCount,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _LimitedOfferBanner(
-                      title: l10n.offerBannerTitle,
-                      subtitle: l10n.offerBannerSubtitle,
-                      onTap: () async {
-                        await showLimitedOfferModal(context);
-                        await _offerFlagStore.markOfferShown();
-                      },
-                    );
-                  }
-                  final movieIndex = index - 1;
-                  if (movieIndex >= state.movies.length) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
+        return Column(
+          children: [
+            AppBar(
+              centerTitle: true,
+              title: const AppText(
+                'Shartflix',
+                style: AppTextStyle.h2,
+              ),
+            ),
+            Expanded(
+              child: StreamBuilder<FavoritesState>(
+                initialData: _favoritesCubit.state,
+                stream: _favoritesCubit.stream,
+                builder: (context, favoritesSnapshot) {
+                  final favoritesState =
+                      favoritesSnapshot.data ?? const FavoritesState();
+                  return RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
                       ),
-                    );
-                  }
-                  final movie = state.movies[movieIndex];
-                  final isFavorite =
-                      favoritesState.favoriteIds.contains(movie.id);
-                  return MovieCard(
-                    movie: movie,
-                    isFavorite: isFavorite,
-                    onFavoriteTap: () {
-                      _favoritesCubit.toggleFavorite(
-                        FavoriteMovie(
-                          id: movie.id,
-                          title: movie.title,
-                          overview: movie.overview,
-                        ),
-                      );
-                    },
+                      itemCount: itemCount,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return _LimitedOfferBanner(
+                            title: l10n.offerBannerTitle,
+                            subtitle: l10n.offerBannerSubtitle,
+                            onTap: () async {
+                              await showLimitedOfferModal(context);
+                              await _offerFlagStore.markOfferShown();
+                            },
+                          );
+                        }
+                        final movieIndex = index - 1;
+                        if (movieIndex >= state.movies.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        final movie = state.movies[movieIndex];
+                        final isFavorite =
+                            favoritesState.favoriteIds.contains(movie.id);
+                        return VerticalMovieCard(
+                          movie: movie,
+                          isFavorite: isFavorite,
+                          onFavoriteTap: () {
+                            _favoritesCubit.toggleFavorite(
+                              FavoriteMovie(
+                                id: movie.id,
+                                title: movie.title,
+                                overview: movie.overview,
+                                posterUrl: movie.posterUrl,
+                                images: movie.images,
+                              ),
+                            );
+                          },
+                          onTap: () => showMovieDetailSheet(context, movie),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
-            );
-          },
+            ),
+          ],
         );
       },
     );
@@ -229,6 +248,7 @@ class _LimitedOfferBanner extends StatelessWidget {
         onTap: onTap,
         child: AppCard(
           padding: const EdgeInsets.all(AppSpacing.lg),
+          borderColor: AppColors.brandRed,
           child: Row(
             children: [
               Expanded(
@@ -246,7 +266,7 @@ class _LimitedOfferBanner extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.arrow_forward, color: AppColors.textSecondary),
+              const Icon(Icons.arrow_forward, color: AppColors.brandRed),
             ],
           ),
         ),

@@ -14,13 +14,14 @@ import '../../../../features/favorites/domain/entities/favorite_movie.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_state.dart';
 import '../../../../features/home/domain/entities/movie.dart';
-import '../../../../features/home/presentation/widgets/movie_card.dart';
+import '../../../../features/home/presentation/widgets/vertical_movie_card.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_radius.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_text.dart';
+import '../../../../screens/movie_detail_sheet.dart';
 import '../bloc/profile_cubit.dart';
 import '../bloc/profile_state.dart';
 
@@ -185,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
+                                  children: [
                                       AppText(displayName, style: AppTextStyle.h1),
                                       if (hasEmail) ...[
                                         const SizedBox(height: AppSpacing.xs),
@@ -195,6 +196,30 @@ class _ProfilePageState extends State<ProfilePage> {
                                           color: AppColors.textSecondary,
                                         ),
                                       ],
+                                      const SizedBox(height: AppSpacing.md),
+                                      AppCard(
+                                        borderColor: AppColors.brandRed,
+                                        backgroundColor: Colors.transparent,
+                                        shadows: const [],
+                                        radius: AppRadius.pill,
+                                        padding: EdgeInsets.zero,
+                                        child: AppButton(
+                                          label: l10n.profileLogout,
+                                          onPressed: () async {
+                                            final logout =
+                                                ServiceLocator.instance
+                                                    .get<LogoutUseCase>();
+                                            await logout();
+                                            if (!context.mounted) return;
+                                            Navigator.of(context)
+                                                .pushNamedAndRemoveUntil(
+                                              AppRoutes.login,
+                                              (route) => false,
+                                            );
+                                          },
+                                          variant: AppButtonVariant.ghost,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -222,7 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const _EmptyFavoritesPadded()
                   else
                     ...favState.favorites.map(
-                      (movie) => MovieCard(
+                      (movie) => VerticalMovieCard(
                         movie: Movie(
                           id: movie.id,
                           title: movie.title,
@@ -240,29 +265,20 @@ class _ProfilePageState extends State<ProfilePage> {
                             images: movie.images,
                           ),
                         ),
+                        onTap: () => showMovieDetailSheet(
+                          context,
+                          Movie(
+                            id: movie.id,
+                            title: movie.title,
+                            overview: movie.overview,
+                            posterUrl: movie.posterUrl,
+                            images: movie.images,
+                          ),
+                        ),
                       ),
                     ),
 
                   const SizedBox(height: AppSpacing.lg),
-
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                    child: AppButton(
-                      label: l10n.profileLogout,
-                      onPressed: () async {
-                        final logout =
-                            ServiceLocator.instance.get<LogoutUseCase>();
-                        await logout();
-                        if (!context.mounted) return;
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          AppRoutes.login,
-                          (route) => false,
-                        );
-                      },
-                      variant: AppButtonVariant.secondary,
-                    ),
-                  ),
                 ],
               ),
             );

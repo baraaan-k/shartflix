@@ -23,76 +23,76 @@ Future<void> showLimitedOfferModal(BuildContext context) async {
         builder: (context, setModalState) {
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.xs,
-                AppSpacing.lg,
-                AppSpacing.xs,
-              ),
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.75,
-                child: AppCard(
-                  radius: AppRadius.lg,
-                padding: const EdgeInsets.all(AppSpacing.md),
-                  borderColor: Colors.transparent,
-                  shadows: const [],
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    child: AppCard(
+                      radius: AppRadius.lg,
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      borderColor: Colors.transparent,
+                      shadows: const [],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _OfferTag(text: 'LIMITED OFFER'),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: () =>
-                                Navigator.of(sheetContext).pop(false),
-                            icon: const Icon(Icons.close),
+                          Row(
+                            children: [
+                              _OfferTag(text: 'LIMITED OFFER'),
+                              const Spacer(),
+                              IconButton(
+                                onPressed: () =>
+                                    Navigator.of(sheetContext).pop(false),
+                                icon: const Icon(Icons.close),
+                                color: AppColors.textSecondary,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          const AppText('Unlock Premium', style: AppTextStyle.h1),
+                          const SizedBox(height: AppSpacing.xs),
+                          const AppText(
+                            'Limited-time deal — save up to 70% today.',
+                            style: AppTextStyle.body,
                             color: AppColors.textSecondary,
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          Expanded(
+                            child: _SingleOfferCard(
+                              isSelected: isSelected,
+                              onTap: () => setModalState(() {
+                                isSelected = !isSelected;
+                              }),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          const _OfferBullet(text: 'Ad-free experience'),
+                          const _OfferBullet(text: 'Exclusive content'),
+                          const _OfferBullet(text: 'Cancel anytime'),
+                          const SizedBox(height: AppSpacing.sm),
+                          SizedBox(
+                            width: double.infinity,
+                            child: AppButton(
+                              label: 'Get Limited Offer',
+                              onPressed: isSelected
+                                  ? () => Navigator.of(sheetContext).pop(true)
+                                  : null,
+                              isDisabled: !isSelected,
+                              variant: AppButtonVariant.primary,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          const AppText(
+                            'By continuing you agree to Terms.',
+                            style: AppTextStyle.caption,
+                            color: AppColors.muted,
+                            align: TextAlign.center,
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.xs),
-                      const AppText('Unlock Premium', style: AppTextStyle.h1),
-                      const SizedBox(height: AppSpacing.xs),
-                      const AppText(
-                        'Limited-time deal — save up to 70% today.',
-                        style: AppTextStyle.body,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      Expanded(
-                        child: _SingleOfferCard(
-                          isSelected: isSelected,
-                          onTap: () => setModalState(() {
-                            isSelected = !isSelected;
-                          }),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      const _OfferBullet(text: 'Ad-free experience'),
-                      const _OfferBullet(text: 'Exclusive content'),
-                      const _OfferBullet(text: 'Cancel anytime'),
-                      const SizedBox(height: AppSpacing.sm),
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          label: 'Get Limited Offer',
-                          onPressed: isSelected
-                              ? () => Navigator.of(sheetContext).pop(true)
-                              : null,
-                          isDisabled: !isSelected,
-                          variant: AppButtonVariant.primary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      const AppText(
-                        'By continuing you agree to Terms.',
-                        style: AppTextStyle.caption,
-                        color: AppColors.muted,
-                        align: TextAlign.center,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
