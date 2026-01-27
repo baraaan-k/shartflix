@@ -8,7 +8,6 @@ Shartflix is a Flutter movie browsing app built as a case study project.
 It delivers a clean movie list experience with pagination, a movie detail flow, and a favorites (like/unlike) interaction.  
 On top of the core requirements, the project includes several bonus implementations such as Firebase (Analytics + Crashlytics), light/dark theme, centralized navigation, a logger service, Lottie animation, localization (TR/EN), and branded splash/app icon.
 
-The case PDF is included in the repository.
 
 ---
 
