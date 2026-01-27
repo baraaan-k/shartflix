@@ -19,7 +19,7 @@ On top of the core requirements, the project includes several bonus implementati
 
 ---
 
-Bonus Features Included
+# Bonus Features Included
 
 ### Firebase (Analytics + Crashlytics)
 - Firebase initializes on app start
