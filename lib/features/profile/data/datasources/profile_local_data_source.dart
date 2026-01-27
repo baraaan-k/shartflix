@@ -158,6 +158,21 @@ class ProfileLocalDataSource {
     }
   }
 
+  Future<void> clearAvatar() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final avatar = File('${docs.path}/$_avatarRelPath');
+    if (await avatar.exists()) {
+      await avatar.delete();
+    }
+    final profile = await readProfile();
+    await _writeProfile(
+      profile.copyWith(
+        avatarPath: null,
+        photoUrl: null,
+      ),
+    );
+  }
+
   Future<void> _writeProfile(ProfileLocalData data) async {
     final docs = await getApplicationDocumentsDirectory();
     final file = File('${docs.path}/$_profileFileName');

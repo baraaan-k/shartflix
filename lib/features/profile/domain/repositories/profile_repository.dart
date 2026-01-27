@@ -7,6 +7,8 @@ abstract class ProfileRepository {
 
   Future<ProfileUser> setAvatar(File imageFile);
 
+  Future<ProfileUser> clearAvatar();
+
   Future<void> clearProfile();
 
   Future<ProfileUser> fetchRemoteProfile();

@@ -28,6 +28,7 @@ import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/fetch_profile_usecase.dart';
 import '../../features/profile/domain/usecases/get_profile_usecase.dart';
+import '../../features/profile/domain/usecases/clear_avatar_usecase.dart';
 import '../../features/profile/domain/usecases/set_avatar_usecase.dart';
 import '../../features/profile/domain/usecases/upload_photo_usecase.dart';
 import '../../features/profile/presentation/bloc/profile_cubit.dart';
@@ -174,6 +175,9 @@ void setupDependencies() {
   sl.registerLazySingleton<SetAvatarUseCase>(
     () => SetAvatarUseCase(sl.get<ProfileRepository>()),
   );
+  sl.registerLazySingleton<ClearAvatarUseCase>(
+    () => ClearAvatarUseCase(sl.get<ProfileRepository>()),
+  );
   sl.registerLazySingleton<UploadPhotoUseCase>(
     () => UploadPhotoUseCase(sl.get<ProfileRepository>()),
   );
@@ -181,6 +185,7 @@ void setupDependencies() {
     () => ProfileCubit(
       getProfileUseCase: sl.get<GetProfileUseCase>(),
       setAvatarUseCase: sl.get<SetAvatarUseCase>(),
+      clearAvatarUseCase: sl.get<ClearAvatarUseCase>(),
       fetchProfileUseCase: sl.get<FetchProfileUseCase>(),
       uploadPhotoUseCase: sl.get<UploadPhotoUseCase>(),
     ),

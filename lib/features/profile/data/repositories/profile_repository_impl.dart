@@ -33,6 +33,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<ProfileUser> clearAvatar() async {
+    await _profileLocalDataSource.clearAvatar();
+    return getProfile();
+  }
+
+  @override
   Future<void> clearProfile() {
     return _profileLocalDataSource.clearProfile();
   }
