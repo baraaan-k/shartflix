@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
-import '../../../../core/router/app_router.dart';
+import '../../../../app/router/app_router.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
@@ -58,10 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void _handleState(AuthState state) {
     if (!mounted) return;
     if (state.status == AuthStatus.authenticated) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRoutes.shell,
-        (route) => false,
-      );
+      context.goNamed(AppRouteNames.shell);
     } else if (state.status == AuthStatus.error && state.message != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.message!)),
@@ -184,7 +182,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 onPressed: isLoading
                                     ? null
                                     : () {
-                                        Navigator.of(context).pop();
+                                        context.pop();
                                       },
                                 variant: AppButtonVariant.ghost,
                               ),

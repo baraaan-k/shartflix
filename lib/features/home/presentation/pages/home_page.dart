@@ -214,7 +214,7 @@ class _HomePageState extends State<HomePage>
                                   ),
                                 );
                               },
-                              onTap: () => showMovieDetailSheet(context, movie),
+                          onTap: () => showMovieDetailSheet(context, movie),
                             );
                           },
                         ),

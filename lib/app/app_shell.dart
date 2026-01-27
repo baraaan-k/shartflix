@@ -15,14 +15,16 @@ import '../ui/components/pill_tab_bar.dart';
 import '../core/theme/app_theme_controller.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({super.key, this.initialIndex = 0});
+
+  final int initialIndex;
 
   @override
   State<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<AppShell> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   final List<Widget> _pages = const [
     HomePage(),
@@ -32,6 +34,7 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     ServiceLocator.instance.get<FavoritesCubit>().load();
     ServiceLocator.instance.get<ProfileCubit>().load();
     WidgetsBinding.instance.addPostFrameCallback((_) {

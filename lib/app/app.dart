@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../core/router/app_router.dart';
-import '../features/auth/presentation/pages/auth_gate.dart';
+import 'router/app_router.dart';
 import '../theme/app_theme.dart';
 import '../core/di/service_locator.dart';
-import '../core/navigation/navigation_service.dart';
 import '../core/localization/app_locale_controller.dart';
 import '../core/theme/app_theme_controller.dart';
 import '../core/theme/theme_binding.dart';
@@ -22,9 +20,6 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeController = ServiceLocator.instance.get<AppLocaleController>();
     final themeController = ServiceLocator.instance.get<AppThemeController>();
-    final navigationService =
-        ServiceLocator.instance.get<NavigationService>();
-
     return ValueListenableBuilder<Locale?>(
       valueListenable: localeController.locale,
       builder: (context, locale, _) {
@@ -38,14 +33,12 @@ class App extends StatelessWidget {
                     : Brightness.light);
             AppColors.setBrightness(brightness);
 
-            return MaterialApp(
+            return MaterialApp.router(
               title: 'Shartflix',
               theme: AppTheme.light(),
               darkTheme: AppTheme.dark(),
               themeMode: themeMode,
-              home: const AuthGate(),
-              onGenerateRoute: AppRouter.onGenerateRoute,
-              navigatorKey: navigationService.navigatorKey,
+              routerConfig: appRouter,
               locale: locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: const [
