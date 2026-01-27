@@ -24,7 +24,10 @@
   "profileGuest": "Guest",
   "profileLanguage": "Language",
   "profileLanguageEnglish": "English",
-  "profileLanguageTurkish": "Turkish"
-  ,
+  "profileLanguageTurkish": "Turkish",
+  "profileBonusTitle": "Firebase Bonus",
+  "profileBonusAnalytics": "Send analytics event",
+  "profileBonusCrashLog": "Log Crashlytics message",
+  "profileBonusCrash": "Crash app",
   "profilePhotoPickError": "Failed to pick image."
 }

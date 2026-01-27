@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -277,6 +279,53 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: AppText(
+                      l10n.profileBonusTitle,
+                      style: AppTextStyle.h2,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AppButton(
+                          label: l10n.profileBonusAnalytics,
+                          onPressed: () async {
+                            await FirebaseAnalytics.instance.logEvent(
+                              name: 'bonus_test',
+                            );
+                          },
+                          variant: AppButtonVariant.secondary,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AppButton(
+                          label: l10n.profileBonusCrashLog,
+                          onPressed: () {
+                            FirebaseCrashlytics.instance
+                                .log('bonus_test_log');
+                          },
+                          variant: AppButtonVariant.secondary,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AppButton(
+                          label: l10n.profileBonusCrash,
+                          onPressed: () {
+                            FirebaseCrashlytics.instance.crash();
+                          },
+                          variant: AppButtonVariant.secondary,
+                        ),
+                      ],
+                    ),
+                  ),
 
                   const SizedBox(height: AppSpacing.lg),
                 ],

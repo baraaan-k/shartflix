@@ -24,7 +24,10 @@
   "profileGuest": "Misafir",
   "profileLanguage": "Dil",
   "profileLanguageEnglish": "İngilizce",
-  "profileLanguageTurkish": "Türkçe"
-  ,
+  "profileLanguageTurkish": "Türkçe",
+  "profileBonusTitle": "Firebase Bonus",
+  "profileBonusAnalytics": "Analytics olayı gönder",
+  "profileBonusCrashLog": "Crashlytics mesajı logla",
+  "profileBonusCrash": "Uygulamayı çökert",
   "profilePhotoPickError": "Resim seçilemedi."
 }
