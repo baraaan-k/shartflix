@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage>
         final bottomInset = MediaQuery.of(context).padding.bottom;
         const tabBarHeight = 72.0;
         final scrollBottomPadding =
-            tabBarHeight + bottomInset + AppSpacing.md;
+            tabBarHeight + bottomInset + AppSpacing.lg;
         return StreamBuilder<HomeState>(
           initialData: _cubit.state,
           stream: _cubit.stream,

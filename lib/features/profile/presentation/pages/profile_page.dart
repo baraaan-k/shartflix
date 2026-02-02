@@ -257,18 +257,39 @@ class _ProfilePhotoUploadPageState extends State<ProfilePhotoUploadPage> {
           body: Stack(
             children: [
               Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.brandRed2.withAlpha(200),
-                        AppColors.bg,
-                        AppColors.bg,
-                      ],
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(color: AppColors.bg),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(0.0, -0.90),
+                            radius: 1.35,
+                            colors: [
+                              AppColors.brandRed2.withValues(alpha: 0.55),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(0.0, 1.30),
+                            radius: 1.35,
+                            colors: [
+                              AppColors.brandRed2.withValues(alpha: 0.55),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SafeArea(
@@ -677,10 +698,8 @@ class _ProfilePageState extends State<ProfilePage> {
             final email = user?.email ?? '';
             final avatarPath = user?.avatarPath;
             final photoUrl = user?.photoUrl;
-            final bottomInset = MediaQuery.of(context).padding.bottom;
             const tabBarHeight = 72.0;
-            final scrollBottomPadding =
-                tabBarHeight + bottomInset + AppSpacing.md;
+            final scrollBottomPadding = tabBarHeight + AppSpacing.tabHeight;
 
             return StreamBuilder<FavoritesState>(
               initialData: _favoritesCubit.state,
@@ -694,20 +713,42 @@ class _ProfilePageState extends State<ProfilePage> {
                   body: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColors.brandRed2.withAlpha(200),
-                              AppColors.bg,
-                              AppColors.bg,
-                            ],
+                      Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Container(color: AppColors.bg),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  center: const Alignment(0.0, -0.90),
+                                  radius: 1.35,
+                                  colors: [
+                                    AppColors.brandRed2.withValues(alpha: 0.55),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  center: const Alignment(0.0, 1.30),
+                                  radius: 1.35,
+                                  colors: [
+                                    AppColors.brandRed2.withValues(alpha: 0.55),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       SafeArea(
+                        bottom: false,
                         child: Column(
                           children: [
                             Padding(
@@ -726,7 +767,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   const Spacer(),
                                   GestureDetector(
                                     onTap: () async {
-                                      await showLimitedOfferModal(context);
+                                      await openLimitedOffer(context);
                                       await ServiceLocator.instance
                                           .get<OfferFlagStore>()
                                           .markOfferShown();
