@@ -78,19 +78,20 @@ flutter:
     - assets/images/
     - assets/branding/
     - assets/lottie/like_burst.json
+    - assets/social/
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/branding/shartflix_app_icon_1024.png
+  image_path: assets/branding/iconImage.png
   remove_alpha_ios: true
 
 flutter_native_splash:
   color: "#000000"
-  image: assets/branding/splash_logo_1024.png
+  image: assets/branding/icon.png
   android_12:
     color: "#000000"
-    image: assets/branding/splash_logo_1024.png
+    image: assets/branding/icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
