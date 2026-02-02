@@ -80,20 +80,6 @@ class _AppShellState extends State<AppShell> {
                       ),
                     ),
                   ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const Alignment(0.0, 1.30),
-                          radius: 1.35,
-                          colors: [
-                            AppColors.brandRed2.withValues(alpha: 0.55),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               IndexedStack(

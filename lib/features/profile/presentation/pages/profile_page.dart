@@ -275,20 +275,6 @@ class _ProfilePhotoUploadPageState extends State<ProfilePhotoUploadPage> {
                         ),
                       ),
                     ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            center: const Alignment(0.0, 1.30),
-                            radius: 1.35,
-                            colors: [
-                              AppColors.brandRed2.withValues(alpha: 0.55),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -722,20 +708,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               decoration: BoxDecoration(
                                 gradient: RadialGradient(
                                   center: const Alignment(0.0, -0.90),
-                                  radius: 1.35,
-                                  colors: [
-                                    AppColors.brandRed2.withValues(alpha: 0.55),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned.fill(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: RadialGradient(
-                                  center: const Alignment(0.0, 1.30),
                                   radius: 1.35,
                                   colors: [
                                     AppColors.brandRed2.withValues(alpha: 0.55),

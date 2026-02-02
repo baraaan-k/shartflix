@@ -42,6 +42,8 @@
   "homeErrorTitle": "Something went wrong",
   "commonError": "Something went wrong",
   "commonRetry": "Retry",
+  "commonReadMore": "Read more",
+  "commonReadLess": "Show less",
   "profileTitle": "Profile",
   "profileFavoritesTitle": "Liked",
   "profileChangePhoto": "Add Photo",

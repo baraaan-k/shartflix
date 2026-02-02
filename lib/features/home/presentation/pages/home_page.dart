@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -7,6 +8,8 @@ import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_spacing.dart';
+import '../../../../theme/app_radius.dart';
+import '../../../../theme/app_typography.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_text.dart';
 import '../../../../ui/like_burst_overlay.dart';
@@ -16,8 +19,6 @@ import '../../../favorites/presentation/bloc/favorites_state.dart';
 import '../../domain/usecases/get_movies_page_usecase.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
-import '../widgets/vertical_movie_card.dart';
-import '../../../../screens/movie_detail_sheet.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,7 +31,9 @@ class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
   late final HomeCubit _cubit;
   late final FavoritesCubit _favoritesCubit;
-  final ScrollController _scrollController = ScrollController();
+  final PageController _pageController = PageController();
+  final Set<String> _expandedMovieIds = {};
+  static const int _previewCharLimit = 60;
   StreamSubscription<HomeState>? _subscription;
   StreamSubscription<FavoritesState>? _favoritesSubscription;
   String? _lastFavoritesError;
@@ -44,7 +47,6 @@ class _HomePageState extends State<HomePage>
     _favoritesCubit = ServiceLocator.instance.get<FavoritesCubit>();
     _subscription = _cubit.stream.listen(_handleState);
     _favoritesSubscription = _favoritesCubit.stream.listen(_handleFavoritesState);
-    _scrollController.addListener(_onScroll);
     _cubit.loadInitial();
   }
 
@@ -52,38 +54,20 @@ class _HomePageState extends State<HomePage>
   void dispose() {
     _subscription?.cancel();
     _favoritesSubscription?.cancel();
-    _scrollController.dispose();
+    _pageController.dispose();
     _cubit.close();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      _cubit.loadMore();
+  void _handleState(HomeState state) {
+    if (!mounted) return;
+    if (state.errorMessage != null && state.movies.isNotEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.homeErrorTitle)),
+      );
     }
   }
-
-  void _handleState(HomeState state) {
-  if (!mounted) return;
-
-  if (state.status == HomeStatus.success && state.hasMore && !state.isLoadingMore) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
-      if (_scrollController.position.maxScrollExtent == 0) {
-        _cubit.loadMore(); // ekran dolana kadar bir sayfa daha çeker
-      }
-    });
-  }
-
-  if (state.errorMessage != null && state.movies.isNotEmpty) {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.homeErrorTitle)),
-    );
-  }
-}
 
   void _handleFavoritesState(FavoritesState state) {
     if (!mounted) return;
@@ -94,6 +78,16 @@ class _HomePageState extends State<HomePage>
         SnackBar(content: Text(l10n.commonError)),
       );
     }
+  }
+
+  bool _shouldShowReadMore(String text) {
+    return text.trim().length > _previewCharLimit;
+  }
+
+  String _buildPreview(String text, String readMore) {
+    final trimmed = text.trim();
+    if (trimmed.length <= _previewCharLimit) return trimmed;
+    return '${trimmed.substring(0, _previewCharLimit).trim()} $readMore';
   }
 
 
@@ -111,9 +105,6 @@ class _HomePageState extends State<HomePage>
       valueListenable: themeController.themeMode,
       builder: (context, _, __) {
         final bottomInset = MediaQuery.of(context).padding.bottom;
-        const tabBarHeight = 72.0;
-        final scrollBottomPadding =
-            tabBarHeight + bottomInset + AppSpacing.lg;
         return StreamBuilder<HomeState>(
           initialData: _cubit.state,
           stream: _cubit.stream,
@@ -142,78 +133,255 @@ class _HomePageState extends State<HomePage>
               );
             }
 
-            final itemCount =
-                state.movies.length + (state.isLoadingMore ? 1 : 0);
-
-            return Column(
-              children: [
-                AppBar(
-                  centerTitle: true,
-                  title: AppText(
-                    'Shartflix',
-                    style: AppTextStyle.h2,
-                  ),
-                ),
-                Expanded(
-                  child: StreamBuilder<FavoritesState>(
-                    initialData: _favoritesCubit.state,
-                    stream: _favoritesCubit.stream,
-                    builder: (context, favoritesSnapshot) {
-                      final favoritesState =
-                          favoritesSnapshot.data ?? const FavoritesState();
-                      return RefreshIndicator(
-                        onRefresh: _onRefresh,
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(
-                            parent: BouncingScrollPhysics(),
+            return StreamBuilder<FavoritesState>(
+              initialData: _favoritesCubit.state,
+              stream: _favoritesCubit.stream,
+              builder: (context, favoritesSnapshot) {
+                final favoritesState =
+                    favoritesSnapshot.data ?? const FavoritesState();
+                const tabBarHeight = 84.0;
+                final blurHeight = tabBarHeight + bottomInset + 240.0;
+                final likeBottom = tabBarHeight + bottomInset + 120.0;
+                return PageView.builder(
+                  controller: _pageController,
+                  scrollDirection: Axis.vertical,
+                  itemCount: state.movies.length,
+                  onPageChanged: (index) {
+                    if (index >= state.movies.length - 2) {
+                      _cubit.loadMore();
+                    }
+                  },
+                  itemBuilder: (context, index) {
+                    final movie = state.movies[index];
+                    final isFavorite =
+                        favoritesState.favoriteIds.contains(movie.id);
+                    final canExpand = _shouldShowReadMore(movie.overview);
+                    final isExpanded = _expandedMovieIds.contains(movie.id);
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Positioned.fill(
+                          child: Image.network(
+                            movie.posterUrl ?? '',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stack) {
+                              return Container(color: AppColors.bg);
+                            },
                           ),
-                          padding: EdgeInsets.only(
-                            bottom: scrollBottomPadding,
-                          ),
-                          itemCount: itemCount,
-                          itemBuilder: (context, index) {
-                            if (index >= state.movies.length) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                child: Center(
-                                  child: SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: blurHeight,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRect(
+                                child: ShaderMask(
+                                  blendMode: BlendMode.dstIn,
+                                  shaderCallback: (rect) {
+                                    return const LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.white,
+                                      ],
+                                      stops: [0.0, 0.6],
+                                    ).createShader(rect);
+                                  },
+                                  child: ImageFiltered(
+                                    imageFilter:
+                                        ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                    child: Image.network(
+                                      movie.posterUrl ?? '',
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stack) {
+                                        return Container(color: AppColors.bg);
+                                      },
                                     ),
                                   ),
                                 ),
-                              );
-                            }
-                            final movie = state.movies[index];
-                            final isFavorite =
-                                favoritesState.favoriteIds.contains(movie.id);
-                            return VerticalMovieCard(
-                              movie: movie,
-                          isFavorite: isFavorite,
-                          onFavoriteTap: () {
-                            LikeBurstOverlay.maybeOf(context)?.play();
-                            _favoritesCubit.toggleFavorite(
-                              FavoriteMovie(
-                                id: movie.id,
-                                title: movie.title,
-                                    overview: movie.overview,
-                                    posterUrl: movie.posterUrl,
-                                    images: movie.images,
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.0),
+                                      Colors.black.withValues(alpha: 0.75),
+                                      Colors.black.withValues(alpha: 0.85),
+                                      Colors.black.withValues(alpha: 0.95),
+                                    ],
+                                    stops: const [0.0, 0.35, 0.7, 1.0],
                                   ),
-                                );
-                              },
-                          onTap: () => showMovieDetailSheet(context, movie),
-                            );
-                          },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                        Positioned(
+                          left: AppSpacing.lg,
+                          right: AppSpacing.lg,
+                          bottom: tabBarHeight + bottomInset + 18.0,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: ClipOval(
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.2),
+                                      border: Border.all(
+                                        color: Colors.white.withAlpha(60),
+                                      ),
+                                    ),
+                                    child: Image.asset(
+                                      'assets/images/iconImage.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AppText(
+                                      movie.title,
+                                      style: AppTextStyle.h2,
+                                      color: Colors.white,
+                                      align: TextAlign.left,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    if (!canExpand || isExpanded)
+                                      Text(
+                                        movie.overview,
+                                        style: AppTypography.body
+                                            .copyWith(fontSize: 15)
+                                            .copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
+                                        maxLines: isExpanded ? 8 : 2,
+                                        overflow: TextOverflow.clip,
+                                        textAlign: TextAlign.left,
+                                      )
+                                    else
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _expandedMovieIds.add(movie.id);
+                                          });
+                                        },
+                                        child: RichText(
+                                          maxLines: 2,
+                                          overflow: TextOverflow.clip,
+                                          text: TextSpan(
+                                            style: AppTypography.body.copyWith(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 15,
+                                            ),
+                                            children: [
+                                              TextSpan(
+                                                text: _buildPreview(
+                                                  movie.overview,
+                                                  '',
+                                                ),
+                                              ),
+                                              const TextSpan(text: ' '),
+                                              TextSpan(
+                                                text: l10n.commonReadMore,
+                                                style: AppTypography.body
+                                                    .copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    if (isExpanded && canExpand) ...[
+                                      const SizedBox(height: AppSpacing.xs),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _expandedMovieIds
+                                                .remove(movie.id);
+                                          });
+                                        },
+                                        child: Text(
+                                          l10n.commonReadLess,
+                                          style: AppTypography.body
+                                              .copyWith(fontSize: 15)
+                                              .copyWith(
+                                                color: Colors.white,
+                                              ),
+                                          textAlign: TextAlign.left,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          right: AppSpacing.lg,
+                          bottom: likeBottom,
+                          child: GestureDetector(
+                            onTap: () {
+                              LikeBurstOverlay.maybeOf(context)?.play();
+                              _favoritesCubit.toggleFavorite(
+                                FavoriteMovie(
+                                  id: movie.id,
+                                  title: movie.title,
+                                  overview: movie.overview,
+                                  posterUrl: movie.posterUrl,
+                                  images: movie.images,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 53,
+                              height: 73,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.pill),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(80),
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: isFavorite
+                                      ? AppColors.brandRed
+                                      : Colors.white,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             );
           },
         );

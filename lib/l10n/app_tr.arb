@@ -42,6 +42,8 @@
   "homeErrorTitle": "Bir şeyler ters gitti",
   "commonError": "Bir şeyler ters gitti",
   "commonRetry": "Tekrar dene",
+  "commonReadMore": "Devamını Oku",
+  "commonReadLess": "Daha Az Göster",
   "profileTitle": "Profil",
   "profileFavoritesTitle": "Beğendiklerim",
   "profileChangePhoto": "Fotoğraf Ekle",

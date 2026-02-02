@@ -48,12 +48,14 @@ class LikePillButton extends StatelessWidget {
               size: AppSpacing.iconMd,
               color: isLiked ? Colors.white : AppColors.textSecondary,
             ),
-            const SizedBox(width: AppSpacing.sm + AppSpacing.xs),
-            AppText(
-              label,
-              style: AppTextStyle.button,
-              color: isLiked ? Colors.white : AppColors.textSecondary,
-            ),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: AppSpacing.sm + AppSpacing.xs),
+              AppText(
+                label,
+                style: AppTextStyle.button,
+                color: isLiked ? Colors.white : AppColors.textSecondary,
+              ),
+            ],
           ],
         ),
       ),
