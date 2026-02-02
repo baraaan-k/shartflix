@@ -47,6 +47,13 @@
   "loginPasswordMin": "Password must be at least 6 characters",
   "loginCta": "Sign in",
   "loginCreateAccount": "Create account",
+  "authTabLogin": "Login",
+  "authTabRegister": "Sign Up",
+  "authForgotPassword": "Forgot password?",
+  "authDontHaveAccount": "Don't have an account?",
+  "authAlreadyHaveAccount": "Already have an account?",
+  "authActionLogin": "Login",
+  "authActionRegister": "Sign Up",
   "registerTitle": "Create account",
   "registerSubtitle": "Start your Shartflix journey.",
   "registerNameLabel": "Name",
@@ -61,5 +68,10 @@
   "registerPasswordRequired": "Password is required",
   "registerPasswordMin": "Password must be at least 6 characters",
   "registerCta": "Create account",
-  "registerHaveAccount": "Already have an account? Sign in"
+  "registerHaveAccount": "Already have an account? Sign in",
+  "registerConfirmPasswordLabel": "Confirm password",
+  "registerConfirmPasswordRequired": "Confirm your password",
+  "registerPasswordMismatch": "Passwords do not match",
+  "registerTermsCaption": "I have read and accept the User Agreement. Please read this agreement before continuing.",
+  "registerTermsError": "Please accept the agreement to continue."
 }

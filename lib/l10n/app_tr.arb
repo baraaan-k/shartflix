@@ -47,6 +47,13 @@
   "loginPasswordMin": "Şifre en az 6 karakter olmalı",
   "loginCta": "Giriş yap",
   "loginCreateAccount": "Hesap oluştur",
+  "authTabLogin": "Giriş Yap",
+  "authTabRegister": "Kaydol",
+  "authForgotPassword": "Şifremi unuttum",
+  "authDontHaveAccount": "Bir hesabın yok mu?",
+  "authAlreadyHaveAccount": "Zaten hesabın var mı?",
+  "authActionLogin": "Giriş Yap",
+  "authActionRegister": "Kaydol",
   "registerTitle": "Hesap oluştur",
   "registerSubtitle": "Shartflix yolculuğuna başla.",
   "registerNameLabel": "Ad",
@@ -61,5 +68,10 @@
   "registerPasswordRequired": "Şifre gerekli",
   "registerPasswordMin": "Şifre en az 6 karakter olmalı",
   "registerCta": "Hesap oluştur",
-  "registerHaveAccount": "Zaten hesabın var mı? Giriş yap"
+  "registerHaveAccount": "Zaten hesabın var mı? Giriş yap",
+  "registerConfirmPasswordLabel": "Şifre Tekrar",
+  "registerConfirmPasswordRequired": "Şifreni tekrar gir",
+  "registerPasswordMismatch": "Şifreler uyuşmuyor",
+  "registerTermsCaption": "Kullanıcı sözleşmesini Okudum ve Kabul ediyorum. Bu sözelşmeyi okuyarak devam ediniz lütfen.",
+  "registerTermsError": "Devam etmek için sözleşmeyi kabul etmelisin."
 }
