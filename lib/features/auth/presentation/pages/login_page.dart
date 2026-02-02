@@ -240,167 +240,173 @@ class _LoginPageState extends State<LoginPage> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.brandRed2.withAlpha(200),
-              AppColors.bg,
-              AppColors.bg,
-            ],
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.brandRed2.withAlpha(200),
+                    AppColors.bg,
+                    AppColors.bg,
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        child: StreamBuilder<AuthState>(
-          initialData: _cubit.state,
-          stream: _cubit.stream,
-          builder: (context, snapshot) {
-            final state = snapshot.data ?? const AuthState();
-            final isLoading = state.status == AuthStatus.loading;
+          StreamBuilder<AuthState>(
+            initialData: _cubit.state,
+            stream: _cubit.stream,
+            builder: (context, snapshot) {
+              final state = snapshot.data ?? const AuthState();
+              final isLoading = state.status == AuthStatus.loading;
 
-            return SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.xl,
-                    AppSpacing.xl,
-                    AppSpacing.xl,
-                    AppSpacing.xl + bottomInset,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildPosterRow(),
-                          const SizedBox(height: AppSpacing.lg),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Image.asset(
-                              'assets/branding/icon.png',
-                              width: AppSpacing.xxl + AppSpacing.lg,
-                              height: AppSpacing.xxl + AppSpacing.lg,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          AppText(
-                            l10n.loginTitle,
-                            style: AppTextStyle.h1,
-                            align: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          AppText(
-                            l10n.loginSubtitle,
-                            style: AppTextStyle.body,
-                            color: AppColors.textSecondary,
-                            align: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          AppTextField(
-                            hint: l10n.loginEmailLabel,
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            prefixIconAsset: 'assets/icons/mail.svg',
-                            fillColor: AppColors.surface.withAlpha(120),
-                            borderColor: AppColors.textPrimary.withAlpha(30),
-                            focusedBorderColor: AppColors.brandRed,
-                            height: AppSpacing.buttonHeight,
-                            radius: AppRadius.lg,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return l10n.loginEmailRequired;
-                              }
-                              if (!value.contains('@')) {
-                                return l10n.loginEmailInvalid;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          AppTextField(
-                            hint: l10n.loginPasswordLabel,
-                            controller: _passwordController,
-                            obscureText: true,
-                            prefixIconAsset: 'assets/icons/eye_off.svg',
-                            fillColor: AppColors.surface.withAlpha(120),
-                            borderColor: AppColors.textPrimary.withAlpha(30),
-                            focusedBorderColor: AppColors.brandRed,
-                            height: AppSpacing.buttonHeight,
-                            radius: AppRadius.lg,
-                            errorText: state.status == AuthStatus.error
-                                ? state.message
-                                : null,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return l10n.loginPasswordRequired;
-                              }
-                              if (value.length < 6) {
-                                return l10n.loginPasswordMin;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: GestureDetector(
-                              onTap: () {},
-                              child: AppText(
-                                l10n.authForgotPassword,
-                                style: AppTextStyle.caption,
-                                color: AppColors.textSecondary,
+              return SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      AppSpacing.xl,
+                      AppSpacing.xl,
+                      AppSpacing.xl + bottomInset,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildPosterRow(),
+                            const SizedBox(height: AppSpacing.lg),
+                            Align(
+                              alignment: Alignment.center,
+                              child: Image.asset(
+                                'assets/branding/icon.png',
+                                width: AppSpacing.xxl + AppSpacing.lg,
+                                height: AppSpacing.xxl + AppSpacing.lg,
+                                fit: BoxFit.contain,
                               ),
                             ),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          AppButton(
-                            label: l10n.loginCta,
-                            onPressed: isLoading ? null : _submit,
-                            isLoading: isLoading,
-                            variant: AppButtonVariant.primary,
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          _buildSocialRow(),
-                          const SizedBox(height: AppSpacing.lg),
-                          GestureDetector(
-                            onTap: () =>
-                                context.goNamed(AppRouteNames.register),
-                            child: Text.rich(
-                              TextSpan(
-                                style: AppTypography.body.copyWith(
+                            const SizedBox(height: AppSpacing.lg),
+                            AppText(
+                              l10n.loginTitle,
+                              style: AppTextStyle.h1,
+                              align: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            AppText(
+                              l10n.loginSubtitle,
+                              style: AppTextStyle.body,
+                              color: AppColors.textSecondary,
+                              align: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            AppTextField(
+                              hint: l10n.loginEmailLabel,
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              prefixIconAsset: 'assets/icons/mail.svg',
+                              fillColor: AppColors.surface.withAlpha(120),
+                              borderColor: AppColors.textPrimary.withAlpha(30),
+                              focusedBorderColor: AppColors.brandRed,
+                              height: AppSpacing.buttonHeight,
+                              radius: AppRadius.lg,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return l10n.loginEmailRequired;
+                                }
+                                if (!value.contains('@')) {
+                                  return l10n.loginEmailInvalid;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            AppTextField(
+                              hint: l10n.loginPasswordLabel,
+                              controller: _passwordController,
+                              obscureText: true,
+                              prefixIconAsset: 'assets/icons/eye_off.svg',
+                              fillColor: AppColors.surface.withAlpha(120),
+                              borderColor: AppColors.textPrimary.withAlpha(30),
+                              focusedBorderColor: AppColors.brandRed,
+                              height: AppSpacing.buttonHeight,
+                              radius: AppRadius.lg,
+                              errorText: state.status == AuthStatus.error
+                                  ? state.message
+                                  : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return l10n.loginPasswordRequired;
+                                }
+                                if (value.length < 6) {
+                                  return l10n.loginPasswordMin;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () {},
+                                child: AppText(
+                                  l10n.authForgotPassword,
+                                  style: AppTextStyle.caption,
                                   color: AppColors.textSecondary,
                                 ),
-                                children: [
-                                  TextSpan(
-                                    text: '${l10n.authDontHaveAccount} ',
-                                  ),
-                                  TextSpan(
-                                    text: l10n.authActionRegister,
-                                    style: AppTypography.body.copyWith(
-                                      color: AppColors.brandRed,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: AppSpacing.xl),
+                            AppButton(
+                              label: l10n.loginCta,
+                              onPressed: isLoading ? null : _submit,
+                              isLoading: isLoading,
+                              variant: AppButtonVariant.primary,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            _buildSocialRow(),
+                            const SizedBox(height: AppSpacing.lg),
+                            GestureDetector(
+                              onTap: () =>
+                                  context.goNamed(AppRouteNames.register),
+                              child: Text.rich(
+                                TextSpan(
+                                  style: AppTypography.body.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '${l10n.authDontHaveAccount} ',
+                                    ),
+                                    TextSpan(
+                                      text: l10n.authActionRegister,
+                                      style: AppTypography.body.copyWith(
+                                        color: AppColors.brandRed,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

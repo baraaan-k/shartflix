@@ -37,8 +37,8 @@ class PillTabBar extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        color: AppColors.surface2,
-        border: Border.all(color: AppColors.borderSoft),
+        color: AppColors.surface.withAlpha(170),
+        border: Border.all(color: AppColors.textPrimary.withAlpha(20)),
       ),
       child: Row(
         children: List.generate(items.length, (index) {
@@ -51,7 +51,7 @@ class PillTabBar extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOutCubic,
                 constraints: const BoxConstraints(
-                  minHeight: AppSpacing.tabHeight,
+                  minHeight: AppSpacing.buttonHeight,
                 ),
                 padding: const EdgeInsets.symmetric(
                   vertical: AppSpacing.sm,
@@ -59,11 +59,7 @@ class PillTabBar extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  gradient: selected
-                      ? LinearGradient(
-                          colors: [AppColors.brandRed, AppColors.brandRed2],
-                        )
-                      : null,
+                  color: selected ? AppColors.brandRed : Colors.transparent,
                   boxShadow: selected ? AppShadows.redGlow : const [],
                 ),
                 child: Row(

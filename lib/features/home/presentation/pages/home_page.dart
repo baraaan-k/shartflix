@@ -8,14 +8,11 @@ import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
-import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_text.dart';
 import '../../../../ui/like_burst_overlay.dart';
 import '../../../favorites/domain/entities/favorite_movie.dart';
 import '../../../favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../favorites/presentation/bloc/favorites_state.dart';
-import '../../../offer/data/offer_flag_store.dart';
-import '../../../../screens/limited_offer_modal.dart';
 import '../../domain/usecases/get_movies_page_usecase.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -33,7 +30,6 @@ class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
   late final HomeCubit _cubit;
   late final FavoritesCubit _favoritesCubit;
-  late final OfferFlagStore _offerFlagStore;
   final ScrollController _scrollController = ScrollController();
   StreamSubscription<HomeState>? _subscription;
   StreamSubscription<FavoritesState>? _favoritesSubscription;
@@ -46,7 +42,6 @@ class _HomePageState extends State<HomePage>
       ServiceLocator.instance.get<GetMoviesPageUseCase>(),
     );
     _favoritesCubit = ServiceLocator.instance.get<FavoritesCubit>();
-    _offerFlagStore = ServiceLocator.instance.get<OfferFlagStore>();
     _subscription = _cubit.stream.listen(_handleState);
     _favoritesSubscription = _favoritesCubit.stream.listen(_handleFavoritesState);
     _scrollController.addListener(_onScroll);
@@ -115,6 +110,10 @@ class _HomePageState extends State<HomePage>
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeController.themeMode,
       builder: (context, _, __) {
+        final bottomInset = MediaQuery.of(context).padding.bottom;
+        const tabBarHeight = 72.0;
+        final scrollBottomPadding =
+            tabBarHeight + bottomInset + AppSpacing.md;
         return StreamBuilder<HomeState>(
           initialData: _cubit.state,
           stream: _cubit.stream,
@@ -144,7 +143,7 @@ class _HomePageState extends State<HomePage>
             }
 
             final itemCount =
-                state.movies.length + (state.isLoadingMore ? 1 : 0) + 1;
+                state.movies.length + (state.isLoadingMore ? 1 : 0);
 
             return Column(
               children: [
@@ -169,20 +168,12 @@ class _HomePageState extends State<HomePage>
                           physics: const AlwaysScrollableScrollPhysics(
                             parent: BouncingScrollPhysics(),
                           ),
+                          padding: EdgeInsets.only(
+                            bottom: scrollBottomPadding,
+                          ),
                           itemCount: itemCount,
                           itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return _LimitedOfferBanner(
-                                title: l10n.offerBannerTitle,
-                                subtitle: l10n.offerBannerSubtitle,
-                                onTap: () async {
-                                  await showLimitedOfferModal(context);
-                                  await _offerFlagStore.markOfferShown();
-                                },
-                              );
-                            }
-                            final movieIndex = index - 1;
-                            if (movieIndex >= state.movies.length) {
+                            if (index >= state.movies.length) {
                               return const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 16),
                                 child: Center(
@@ -196,7 +187,7 @@ class _HomePageState extends State<HomePage>
                                 ),
                               );
                             }
-                            final movie = state.movies[movieIndex];
+                            final movie = state.movies[index];
                             final isFavorite =
                                 favoritesState.favoriteIds.contains(movie.id);
                             return VerticalMovieCard(
@@ -232,57 +223,6 @@ class _HomePageState extends State<HomePage>
 
   @override
   bool get wantKeepAlive => true;
-}
-
-class _LimitedOfferBanner extends StatelessWidget {
-  const _LimitedOfferBanner({
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.sm,
-      ),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AppCard(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          borderColor: AppColors.brandRed,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(title, style: AppTextStyle.h2),
-                    const SizedBox(height: AppSpacing.xs),
-                    AppText(
-                      subtitle,
-                      style: AppTextStyle.caption,
-                      color: AppColors.textSecondary,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Icon(Icons.arrow_forward, color: AppColors.brandRed),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _EmptyState extends StatelessWidget {
@@ -373,12 +313,16 @@ class _RefreshableState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    const tabBarHeight = 72.0;
+    final scrollBottomPadding = tabBarHeight + bottomInset + AppSpacing.md;
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
+        padding: EdgeInsets.only(bottom: scrollBottomPadding),
         children: [
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.7,
