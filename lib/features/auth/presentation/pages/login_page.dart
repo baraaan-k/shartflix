@@ -19,6 +19,8 @@ import '../../../../ui/primitives/app_text.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../../profile/domain/usecases/fetch_profile_usecase.dart';
+import '../../../profile/domain/usecases/get_profile_usecase.dart';
 import '../bloc/auth_cubit.dart';
 import '../bloc/auth_state.dart';
 
@@ -36,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   late final AuthCubit _cubit;
   StreamSubscription<AuthState>? _subscription;
+  bool _didNavigate = false;
 
   @override
   void initState() {
@@ -58,14 +61,31 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleState(AuthState state) {
+  void _handleState(AuthState state) async {
     if (!mounted) return;
     if (state.status == AuthStatus.authenticated) {
-      context.goNamed(AppRouteNames.shell);
+      if (_didNavigate) return;
+      _didNavigate = true;
+      final sl = ServiceLocator.instance;
+      final fetchProfile = sl.get<FetchProfileUseCase>();
+      final getProfile = sl.get<GetProfileUseCase>();
+      try {
+        await fetchProfile();
+      } catch (_) {}
+      final user = await getProfile();
+      final hasPhoto = (user.photoUrl != null && user.photoUrl!.isNotEmpty) ||
+          (user.avatarPath != null && user.avatarPath!.isNotEmpty);
+      if (!mounted) return;
+      if (hasPhoto) {
+        context.goNamed(AppRouteNames.shell);
+      } else {
+        context.goNamed(AppRouteNames.profilePhoto);
+      }
     } else if (state.status == AuthStatus.error && state.message != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.message!)),
       );
+      _didNavigate = false;
     }
   }
 

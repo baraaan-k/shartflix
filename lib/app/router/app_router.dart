@@ -4,6 +4,7 @@ import '../../app/app_shell.dart';
 import '../../features/auth/presentation/pages/auth_gate.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/home/domain/entities/movie.dart';
 import '../../screens/design_system_playground.dart';
 import '../../screens/movie_detail_route_page.dart';
@@ -13,6 +14,7 @@ class AppRouteNames {
   static const String authGate = 'authGate';
   static const String login = 'login';
   static const String register = 'register';
+  static const String profilePhoto = 'profilePhoto';
   static const String shell = 'shell';
   static const String home = 'home';
   static const String profile = 'profile';
@@ -37,6 +39,11 @@ final GoRouter appRouter = GoRouter(
       path: '/register',
       name: AppRouteNames.register,
       builder: (context, state) => const RegisterPage(),
+    ),
+    GoRoute(
+      path: '/profile-photo',
+      name: AppRouteNames.profilePhoto,
+      builder: (context, state) => const ProfilePhotoUploadPage(),
     ),
     GoRoute(
       path: '/shell',

@@ -35,6 +35,11 @@
   "profileBonusCrash": "Crash app",
   "profilePhotoPickError": "Failed to pick image."
   ,
+  "profilePhotoDetailTitle": "Profile Detail",
+  "profilePhotoHeaderTitle": "Upload Photo",
+  "profilePhotoHeaderSubtitle": "You can upload an image for your profile photo.",
+  "profilePhotoPrimaryCta": "Continue",
+  "profilePhotoSkip": "Skip",
   "loginTitle": "Welcome back",
   "loginSubtitle": "Sign in to continue.",
   "loginEmailLabel": "Email",

@@ -22,6 +22,7 @@ import '../../../../theme/app_radius.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
+import '../../../../ui/primitives/app_icon.dart';
 import '../../../../ui/primitives/app_text.dart';
 import '../../../../ui/like_burst_overlay.dart';
 import '../../../../screens/movie_detail_sheet.dart';
@@ -33,6 +34,329 @@ class ProfilePage extends StatefulWidget {
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class ProfilePhotoUploadPage extends StatefulWidget {
+  const ProfilePhotoUploadPage({super.key});
+
+  @override
+  State<ProfilePhotoUploadPage> createState() =>
+      _ProfilePhotoUploadPageState();
+}
+
+class _ProfilePhotoUploadPageState extends State<ProfilePhotoUploadPage> {
+  late final ProfileCubit _profileCubit;
+  StreamSubscription<ProfileState>? _profileSubscription;
+  File? _selectedFile;
+  String? _lastProfileError;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileCubit = ServiceLocator.instance.get<ProfileCubit>();
+    _profileSubscription = _profileCubit.stream.listen(_handleProfileState);
+    _profileCubit.load();
+  }
+
+  @override
+  void dispose() {
+    _profileSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _handleProfileState(ProfileState state) {
+    if (!mounted) return;
+    if (state.errorMessage != null && state.errorMessage != _lastProfileError) {
+      _lastProfileError = state.errorMessage;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.commonError)),
+      );
+    }
+  }
+
+  Future<void> _pickPhoto() async {
+    try {
+      final picker = ImagePicker();
+      final selected = await picker.pickImage(source: ImageSource.gallery);
+      if (selected == null) return;
+      setState(() => _selectedFile = File(selected.path));
+    } catch (_) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.profilePhotoPickError)),
+      );
+    }
+  }
+
+  void _clearPhoto() {
+    setState(() => _selectedFile = null);
+  }
+
+  Future<void> _continue() async {
+    final file = _selectedFile;
+    if (file == null) return;
+    await _profileCubit.setAvatar(file);
+    if (!mounted) return;
+    if (_profileCubit.state.errorMessage == null) {
+      context.goNamed(AppRouteNames.shell);
+    }
+  }
+
+  void _skip() {
+    context.goNamed(AppRouteNames.shell);
+  }
+
+  Widget _buildTopBar(AppLocalizations l10n) {
+    return SizedBox(
+      height: AppSpacing.xxl + AppSpacing.lg,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              onTap: () => context.pop(),
+              child: Container(
+                width: AppSpacing.xxl + AppSpacing.sm,
+                height: AppSpacing.xxl + AppSpacing.sm,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withAlpha(140),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.textPrimary.withAlpha(30),
+                  ),
+                ),
+                child: Center(
+                  child: AppIcon(
+                    'assets/icons/arrow.svg',
+                    size: AppSpacing.iconLg,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          AppText(
+            l10n.profilePhotoDetailTitle,
+            style: AppTextStyle.body,
+            color: AppColors.textPrimary,
+            align: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(AppLocalizations l10n) {
+    return Column(
+      children: [
+        Container(
+          width: AppSpacing.xxl + AppSpacing.lg,
+          height: AppSpacing.xxl + AppSpacing.lg,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withAlpha(120),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: Center(
+            child: AppIcon(
+              'assets/icons/profile.svg',
+              size: AppSpacing.iconLg + AppSpacing.sm,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppText(
+          l10n.profilePhotoHeaderTitle,
+          style: AppTextStyle.h2,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        AppText(
+          l10n.profilePhotoHeaderSubtitle,
+          style: AppTextStyle.caption,
+          color: AppColors.textSecondary,
+          align: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyUploadBox() {
+    return GestureDetector(
+      onTap: _pickPhoto,
+      child: SizedBox(
+        width: 160,
+        height: 160,
+        child: CustomPaint(
+          painter: _DashedRRectPainter(
+            color: AppColors.textPrimary.withAlpha(40),
+            radius: AppRadius.lg,
+          ),
+          child: Center(
+            child: AppIcon(
+              'assets/icons/plus.svg',
+              size: AppSpacing.iconLg + AppSpacing.sm,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedPreview(File file) {
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          child: Image.file(
+            file,
+            width: 160,
+            height: 160,
+            fit: BoxFit.cover,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        GestureDetector(
+          onTap: _clearPhoto,
+          child: Container(
+            width: AppSpacing.xl + AppSpacing.sm,
+            height: AppSpacing.xl + AppSpacing.sm,
+            decoration: BoxDecoration(
+              color: AppColors.surface.withAlpha(160),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.textPrimary.withAlpha(30),
+              ),
+            ),
+            child: Center(
+              child: AppIcon(
+                'assets/icons/x.svg',
+                size: AppSpacing.iconMd,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return StreamBuilder<ProfileState>(
+      initialData: _profileCubit.state,
+      stream: _profileCubit.stream,
+      builder: (context, snapshot) {
+        final state = snapshot.data ?? const ProfileState();
+        final isBusy = state.isUpdatingAvatar;
+
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.brandRed2.withAlpha(200),
+                  AppColors.bg,
+                  AppColors.bg,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.lg,
+                ),
+                child: Column(
+                  children: [
+                    _buildTopBar(l10n),
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildHeader(l10n),
+                    const SizedBox(height: AppSpacing.xl),
+                    _selectedFile == null
+                        ? _buildEmptyUploadBox()
+                        : _buildSelectedPreview(_selectedFile!),
+                    const Spacer(),
+                    AppButton(
+                      label: l10n.profilePhotoPrimaryCta,
+                      onPressed: (_selectedFile == null || isBusy)
+                          ? null
+                          : _continue,
+                      isLoading: isBusy,
+                      isDisabled: _selectedFile == null,
+                      variant: AppButtonVariant.primary,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    GestureDetector(
+                      onTap: _skip,
+                      child: AppText(
+                        l10n.profilePhotoSkip,
+                        style: AppTextStyle.body,
+                        color: AppColors.textSecondary,
+                        align: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DashedRRectPainter extends CustomPainter {
+  _DashedRRectPainter({
+    required this.color,
+    required this.radius,
+    this.dashLength = 6,
+    this.gapLength = 6,
+  });
+
+  final Color color;
+  final double radius;
+  final double dashLength;
+  final double gapLength;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+    final path = Path()..addRRect(rrect);
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final segment = metric.extractPath(
+          distance,
+          distance + dashLength,
+        );
+        canvas.drawPath(segment, paint);
+        distance += dashLength + gapLength;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedRRectPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.radius != radius ||
+        oldDelegate.dashLength != dashLength ||
+        oldDelegate.gapLength != gapLength;
+  }
 }
 
 class _ProfilePageState extends State<ProfilePage> {

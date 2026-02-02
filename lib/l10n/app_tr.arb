@@ -35,6 +35,11 @@
   "profileBonusCrash": "Uygulamayı çökert",
   "profilePhotoPickError": "Resim seçilemedi."
   ,
+  "profilePhotoDetailTitle": "Profil Detayı",
+  "profilePhotoHeaderTitle": "Fotoğraf Yükle",
+  "profilePhotoHeaderSubtitle": "Profil fotoğrafın için görsel yükleyebilirsin",
+  "profilePhotoPrimaryCta": "Devam Et",
+  "profilePhotoSkip": "Atla",
   "loginTitle": "Tekrar hoş geldin",
   "loginSubtitle": "Devam etmek için giriş yap.",
   "loginEmailLabel": "E-posta",
