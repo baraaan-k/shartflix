@@ -113,7 +113,7 @@ class VerticalMovieCard extends StatelessWidget {
                   children: [
                     AppText(
                       movie.title,
-                      style: AppTextStyle.h2,
+                      style: AppTextStyle.h4,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

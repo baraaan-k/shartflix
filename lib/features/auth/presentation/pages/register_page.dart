@@ -1,20 +1,24 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/service_locator.dart';
 import '../../../../app/router/app_router.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_radius.dart';
 import '../../../../theme/app_spacing.dart';
+import '../../../../theme/app_typography.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/components/app_text_field.dart';
-import '../../../../ui/primitives/app_card.dart';
+import '../../../../ui/auth/auth_animated_backdrop.dart';
+import '../../../../ui/primitives/app_icon.dart';
 import '../../../../ui/primitives/app_text.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../../profile/domain/usecases/fetch_profile_usecase.dart';
+import '../../../profile/domain/usecases/get_profile_usecase.dart';
 import '../bloc/auth_cubit.dart';
 import '../bloc/auth_state.dart';
 
@@ -30,9 +34,13 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _acceptedTerms = false;
+  bool _showTermsError = false;
 
   late final AuthCubit _cubit;
   StreamSubscription<AuthState>? _subscription;
+  bool _didNavigate = false;
 
   @override
   void initState() {
@@ -53,22 +61,46 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _handleState(AuthState state) {
+  void _handleState(AuthState state) async {
     if (!mounted) return;
     if (state.status == AuthStatus.authenticated) {
-      context.goNamed(AppRouteNames.shell);
+      if (_didNavigate) return;
+      _didNavigate = true;
+      final sl = ServiceLocator.instance;
+      final fetchProfile = sl.get<FetchProfileUseCase>();
+      final getProfile = sl.get<GetProfileUseCase>();
+      try {
+        await fetchProfile();
+      } catch (_) {}
+      final user = await getProfile();
+      final hasPhoto = (user.photoUrl != null && user.photoUrl!.isNotEmpty) ||
+          (user.avatarPath != null && user.avatarPath!.isNotEmpty);
+      if (!mounted) return;
+      if (hasPhoto) {
+        context.goNamed(AppRouteNames.shell);
+      } else {
+        context.goNamed(AppRouteNames.profilePhoto);
+      }
     } else if (state.status == AuthStatus.error && state.message != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.message!)),
       );
+      _didNavigate = false;
     }
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) {
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!_acceptedTerms) {
+      setState(() {
+        _showTermsError = true;
+      });
+    }
+    if (!isValid || !_acceptedTerms) {
       return;
     }
     await _cubit.register(
@@ -78,125 +110,303 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Widget _buildTermsRow(AppLocalizations l10n) {
+    final borderColor = _showTermsError
+        ? AppColors.brandRed
+        : AppColors.textPrimary.withAlpha(30);
+    final fillColor = Colors.transparent;
+    final iconColor = AppColors.textSecondary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _acceptedTerms = !_acceptedTerms;
+              if (_acceptedTerms) {
+                _showTermsError = false;
+              }
+            });
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: AppSpacing.lg + AppSpacing.xs,
+                height: AppSpacing.lg + AppSpacing.xs,
+                decoration: BoxDecoration(
+                  color: fillColor,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(color: borderColor),
+                ),
+                child: _acceptedTerms
+                    ? const Center(
+                        child: AppIcon(
+                          'assets/icons/check_on.svg',
+                          size: AppSpacing.iconMd,
+                        ),
+                      )
+                    : Center(
+                        child: AppIcon(
+                          'assets/icons/check_off.svg',
+                          size: AppSpacing.iconMd,
+                          color: iconColor,
+                        ),
+                      ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: AppText(
+                  l10n.registerTermsCaption,
+                  style: AppTextStyle.caption,
+                  color: AppColors.muted,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_showTermsError) ...[
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            l10n.registerTermsError,
+            style: AppTextStyle.caption,
+            color: AppColors.danger,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _socialButton(String asset) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {},
+        child: Container(
+          height: AppSpacing.buttonHeight,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withAlpha(160),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: AppColors.textPrimary.withAlpha(30),
+            ),
+          ),
+          child: Center(
+            child: AppIcon(
+              asset,
+              size: AppSpacing.iconLg,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocialRow() {
+    return Row(
+      children: [
+        _socialButton('assets/social/google.svg'),
+        const SizedBox(width: AppSpacing.md),
+        _socialButton('assets/social/apple.svg'),
+        const SizedBox(width: AppSpacing.md),
+        _socialButton('assets/social/facebook.svg'),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: StreamBuilder<AuthState>(
-        initialData: _cubit.state,
-        stream: _cubit.stream,
-        builder: (context, snapshot) {
-          final state = snapshot.data ?? const AuthState();
-          final isLoading = state.status == AuthStatus.loading;
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: const AuthAnimatedBackdrop(
+              showPosters: false,
+              glowCenter: Alignment(0.0, -0.85),
+            ),
+          ),
+          StreamBuilder<AuthState>(
+            initialData: _cubit.state,
+            stream: _cubit.stream,
+            builder: (context, snapshot) {
+              final state = snapshot.data ?? const AuthState();
+              final isLoading = state.status == AuthStatus.loading;
 
-          return SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AppText(l10n.registerTitle, style: AppTextStyle.h1),
-                        const SizedBox(height: AppSpacing.sm),
-                        AppText(
-                          l10n.registerSubtitle,
-                          style: AppTextStyle.body,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        AppCard(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              if (state.status == AuthStatus.error &&
-                                  state.message != null) ...[
-                                AppText(
-                                  state.message!,
-                                  style: AppTextStyle.caption,
-                                  color: AppColors.danger,
+              return SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      AppSpacing.xl,
+                      AppSpacing.xl,
+                      AppSpacing.xl + bottomInset,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Align(
+                              alignment: Alignment.center,
+                              child: Image.asset(
+                                'assets/branding/icon.png',
+                                width: (AppSpacing.xxl + AppSpacing.xl) * 1.5,
+                                height: (AppSpacing.xxl + AppSpacing.xl) * 1.5,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            AppText(
+                              l10n.registerTitle,
+                              style: AppTextStyle.h4,
+                              align: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            AppText(
+                              l10n.registerSubtitle,
+                              style: AppTextStyle.body,
+                              color: AppColors.textSecondary,
+                              align: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            AppTextField(
+                              hint: l10n.registerNameLabel,
+                              controller: _nameController,
+                              textCapitalization:
+                                  TextCapitalization.words,
+                              prefixIconAsset: 'assets/icons/profile.svg',
+                              fillColor: AppColors.surface.withAlpha(120),
+                              borderColor: AppColors.textPrimary.withAlpha(30),
+                              height: AppSpacing.buttonHeight,
+                              radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return l10n.registerNameRequired;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            AppTextField(
+                              hint: l10n.registerEmailLabel,
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              prefixIconAsset: 'assets/icons/mail.svg',
+                              fillColor: AppColors.surface.withAlpha(120),
+                              borderColor: AppColors.textPrimary.withAlpha(30),
+                              height: AppSpacing.buttonHeight,
+                              radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return l10n.registerEmailRequired;
+                                }
+                                if (!value.contains('@')) {
+                                  return l10n.registerEmailInvalid;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            AppTextField(
+                              hint: l10n.registerPasswordLabel,
+                              controller: _passwordController,
+                              obscureText: true,
+                              prefixIconAsset: 'assets/icons/eye_off.svg',
+                              fillColor: AppColors.surface.withAlpha(120),
+                              borderColor: AppColors.textPrimary.withAlpha(30),
+                              height: AppSpacing.buttonHeight,
+                              radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return l10n.registerPasswordRequired;
+                                }
+                                if (value.length < 6) {
+                                  return l10n.registerPasswordMin;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            AppTextField(
+                              hint: l10n.registerConfirmPasswordLabel,
+                              controller: _confirmPasswordController,
+                              obscureText: true,
+                              prefixIconAsset: 'assets/icons/eye_off.svg',
+                              fillColor: AppColors.surface.withAlpha(120),
+                              borderColor: AppColors.textPrimary.withAlpha(30),
+                              height: AppSpacing.buttonHeight,
+                              radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return l10n.registerConfirmPasswordRequired;
+                                }
+                                if (value != _passwordController.text) {
+                                  return l10n.registerPasswordMismatch;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            _buildTermsRow(l10n),
+                            const SizedBox(height: AppSpacing.xl),
+                            AppButton(
+                              label: l10n.registerCta,
+                              onPressed: isLoading ? null : _submit,
+                              isLoading: isLoading,
+                              variant: AppButtonVariant.primary,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            _buildSocialRow(),
+                            const SizedBox(height: AppSpacing.lg),
+                            GestureDetector(
+                              onTap: () => context.goNamed(AppRouteNames.login),
+                              child: Text.rich(
+                                TextSpan(
+                                  style: AppTypography.body.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '${l10n.authAlreadyHaveAccount} ',
+                                    ),
+                                    TextSpan(
+                                      text: l10n.authActionLogin,
+                                      style: AppTypography.body.copyWith(
+                                        color: AppColors.brandRed,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: AppSpacing.md),
-                              ],
-                              AppTextField(
-                                label: l10n.registerNameLabel,
-                                hint: l10n.registerNameHint,
-                                controller: _nameController,
-                                textCapitalization:
-                                    TextCapitalization.words,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return l10n.registerNameRequired;
-                                  }
-                                  return null;
-                                },
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: AppSpacing.lg),
-                              AppTextField(
-                                label: l10n.registerEmailLabel,
-                                hint: l10n.registerEmailHint,
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                prefixIconAsset: 'assets/icons/mail.svg',
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return l10n.registerEmailRequired;
-                                  }
-                                  if (!value.contains('@')) {
-                                    return l10n.registerEmailInvalid;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                              AppTextField(
-                                label: l10n.registerPasswordLabel,
-                                hint: l10n.registerPasswordHint,
-                                controller: _passwordController,
-                                obscureText: true,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return l10n.registerPasswordRequired;
-                                  }
-                                  if (value.length < 6) {
-                                    return l10n.registerPasswordMin;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: AppSpacing.xl),
-                              AppButton(
-                                label: l10n.registerCta,
-                                onPressed: isLoading ? null : _submit,
-                                isLoading: isLoading,
-                                variant: AppButtonVariant.primary,
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              AppButton(
-                                label: l10n.registerHaveAccount,
-                                onPressed: isLoading
-                                    ? null
-                                    : () {
-                                        context.pop();
-                                      },
-                                variant: AppButtonVariant.ghost,
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ],
       ),
     );
   }

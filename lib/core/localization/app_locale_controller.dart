@@ -10,7 +10,11 @@ class AppLocaleController {
 
   Future<void> load() async {
     final code = await _prefsStore.readLocaleCode();
-    if (code == null) return;
+    if (code == null) {
+      locale.value = const Locale('en');
+      await _prefsStore.saveLocaleCode('en');
+      return;
+    }
     locale.value = Locale(code);
   }
 

@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../core/di/service_locator.dart';
-import '../features/auth/data/datasources/auth_local_data_source.dart';
-import '../features/offer/data/offer_flag_store.dart';
-import '../screens/limited_offer_modal.dart';
 import '../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import '../features/profile/presentation/bloc/profile_cubit.dart';
@@ -37,20 +34,6 @@ class _AppShellState extends State<AppShell> {
     _currentIndex = widget.initialIndex;
     ServiceLocator.instance.get<FavoritesCubit>().load();
     ServiceLocator.instance.get<ProfileCubit>().load();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _maybeShowOffer();
-    });
-  }
-
-  Future<void> _maybeShowOffer() async {
-    final authLocal = ServiceLocator.instance.get<AuthLocalDataSource>();
-    final flagStore = ServiceLocator.instance.get<OfferFlagStore>();
-    final token = await authLocal.getToken();
-    if (token == null) return;
-    final shown = await flagStore.isOfferShown();
-    if (shown || !mounted) return;
-    await showLimitedOfferModal(context);
-    await flagStore.markOfferShown();
   }
 
   void _onTap(int index) {
@@ -72,26 +55,47 @@ class _AppShellState extends State<AppShell> {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeController.themeMode,
       builder: (context, _, __) {
+        final bottomInset = MediaQuery.of(context).padding.bottom;
+        const tabBarHeight = 72.0;
         return Scaffold(
-          backgroundColor: AppColors.bg,
-          body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: IndexedStack(
-                    index: _currentIndex,
-                    children: _pages,
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(color: AppColors.bg),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(0.0, -0.90),
+                          radius: 1.35,
+                          colors: [
+                            AppColors.brandRed2.withValues(alpha: 0.55),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.sm,
-                    AppSpacing.lg,
-                    AppSpacing.lg,
+                ],
+              ),
+              IndexedStack(
+                index: _currentIndex,
+                children: _pages,
+              ),
+              Positioned(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                bottom: 0,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: bottomInset,
                   ),
-                  child: SafeArea(
-                    top: false,
+                  child: SizedBox(
+                    height: tabBarHeight,
                     child: PillTabBar(
                       items: [
                         PillTabItem(
@@ -108,8 +112,8 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },

@@ -18,6 +18,13 @@ class AppTextField extends StatefulWidget {
     this.prefixIconAsset,
     this.errorText,
     this.helperText,
+    this.fillColor,
+    this.disabledFillColor,
+    this.height,
+    this.radius,
+    this.borderColor,
+    this.focusedBorderColor,
+    this.errorBorderColor,
     this.enabled = true,
     this.autoFocus = false,
     this.validator,
@@ -34,6 +41,13 @@ class AppTextField extends StatefulWidget {
   final String? prefixIconAsset;
   final String? errorText;
   final String? helperText;
+  final Color? fillColor;
+  final Color? disabledFillColor;
+  final double? height;
+  final double? radius;
+  final Color? borderColor;
+  final Color? focusedBorderColor;
+  final Color? errorBorderColor;
   final bool enabled;
   final bool autoFocus;
   final FormFieldValidator<String>? validator;
@@ -78,18 +92,22 @@ class _AppTextFieldState extends State<AppTextField> {
             (fieldError != null && fieldError.isNotEmpty) ||
                 (widget.errorText != null && widget.errorText!.isNotEmpty);
         final isFocused = _focusNode.hasFocus;
+        final defaultBorder = widget.borderColor ?? AppColors.borderSoft;
         final borderColor = !widget.enabled
             ? AppColors.borderSoft
             : hasError
-                ? AppColors.danger
+                ? (widget.errorBorderColor ?? AppColors.danger)
                 : isFocused
-                    ? AppColors.brandRed
-                    : AppColors.borderSoft;
-    final textColor =
-        widget.enabled ? AppColors.textPrimary : AppColors.textSecondary;
-    final iconColor = widget.enabled
-        ? AppColors.textSecondary
-        : AppColors.textSecondary.withAlpha(153);
+                    ? (widget.focusedBorderColor ?? AppColors.brandRed)
+                    : defaultBorder;
+        final textColor =
+            widget.enabled ? AppColors.textPrimary : AppColors.textSecondary;
+        final iconColor = widget.enabled
+            ? AppColors.textSecondary
+            : AppColors.textSecondary.withAlpha(153);
+        final backgroundColor = widget.enabled
+            ? (widget.fillColor ?? AppColors.surface)
+            : (widget.disabledFillColor ?? AppColors.surface2);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,14 +118,15 @@ class _AppTextFieldState extends State<AppTextField> {
             ],
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              height: AppSpacing.fieldHeight,
+              height: widget.height ?? AppSpacing.fieldHeight,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.lg,
                 vertical: AppSpacing.md,
               ),
               decoration: BoxDecoration(
-                color: widget.enabled ? AppColors.surface : AppColors.surface2,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
+                color: backgroundColor,
+                borderRadius:
+                    BorderRadius.circular(widget.radius ?? AppRadius.pill),
                 border: Border.all(color: borderColor),
                 boxShadow: isFocused && !hasError && widget.enabled
                     ? AppShadows.redGlow
