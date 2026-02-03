@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -9,11 +7,11 @@ import '../../../../app/router/app_router.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_radius.dart';
-import '../../../../theme/app_shadows.dart';
 import '../../../../theme/app_spacing.dart';
 import '../../../../theme/app_typography.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/components/app_text_field.dart';
+import '../../../../ui/auth/auth_animated_backdrop.dart';
 import '../../../../ui/primitives/app_icon.dart';
 import '../../../../ui/primitives/app_text.dart';
 import '../../domain/usecases/login_usecase.dart';
@@ -109,104 +107,6 @@ class _RegisterPageState extends State<RegisterPage> {
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
-    );
-  }
-
-  Widget _posterCard({
-    required double width,
-    required double height,
-    required List<Color> colors,
-    required double angle,
-    required Offset offset,
-  }) {
-    return Transform.translate(
-      offset: offset,
-      child: Transform.rotate(
-        angle: angle,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: colors,
-              ),
-              border: Border.all(color: AppColors.borderSoft),
-              boxShadow: AppShadows.softCard,
-            ),
-            child: const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color.fromRGBO(0, 0, 0, 0.0),
-                    Color.fromRGBO(0, 0, 0, 0.35),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPosterRow() {
-    return SizedBox(
-      height: AppSpacing.xxl * 3,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          _posterCard(
-            width: AppSpacing.xxl * 2,
-            height: AppSpacing.xxl * 3,
-            colors: [
-              AppColors.surface2,
-              AppColors.surface,
-              AppColors.brandRed2.withAlpha(180),
-            ],
-            angle: -math.pi / 16,
-            offset: Offset(-AppSpacing.xxl * 2, AppSpacing.sm),
-          ),
-          _posterCard(
-            width: AppSpacing.xxl * 2 + AppSpacing.lg,
-            height: AppSpacing.xxl * 3 + AppSpacing.md,
-            colors: [
-              AppColors.surface,
-              AppColors.surface2,
-              AppColors.brandRed.withAlpha(200),
-            ],
-            angle: -math.pi / 32,
-            offset: Offset(-AppSpacing.xl, 0),
-          ),
-          _posterCard(
-            width: AppSpacing.xxl * 2 + AppSpacing.xl,
-            height: AppSpacing.xxl * 3 + AppSpacing.lg,
-            colors: [
-              AppColors.surface,
-              AppColors.surface2,
-              AppColors.brandRed.withAlpha(210),
-            ],
-            angle: math.pi / 40,
-            offset: Offset(AppSpacing.xs, -AppSpacing.xs),
-          ),
-          _posterCard(
-            width: AppSpacing.xxl * 2,
-            height: AppSpacing.xxl * 3,
-            colors: [
-              AppColors.surface2,
-              AppColors.surface,
-              AppColors.brandRed2.withAlpha(170),
-            ],
-            angle: math.pi / 18,
-            offset: Offset(AppSpacing.xxl * 2, AppSpacing.sm),
-          ),
-        ],
-      ),
     );
   }
 
@@ -324,18 +224,9 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.brandRed2.withAlpha(200),
-                    AppColors.bg,
-                    AppColors.bg,
-                  ],
-                ),
-              ),
+            child: const AuthAnimatedBackdrop(
+              showPosters: false,
+              glowCenter: Alignment(0.0, -0.85),
             ),
           ),
           StreamBuilder<AuthState>(
@@ -363,21 +254,19 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildPosterRow(),
-                            const SizedBox(height: AppSpacing.lg),
                             Align(
                               alignment: Alignment.center,
                               child: Image.asset(
                                 'assets/branding/icon.png',
-                                width: AppSpacing.xxl + AppSpacing.lg,
-                                height: AppSpacing.xxl + AppSpacing.lg,
+                                width: (AppSpacing.xxl + AppSpacing.xl) * 1.5,
+                                height: (AppSpacing.xxl + AppSpacing.xl) * 1.5,
                                 fit: BoxFit.contain,
                               ),
                             ),
                             const SizedBox(height: AppSpacing.lg),
                             AppText(
                               l10n.registerTitle,
-                              style: AppTextStyle.h1,
+                              style: AppTextStyle.h4,
                               align: TextAlign.center,
                             ),
                             const SizedBox(height: AppSpacing.sm),
@@ -396,7 +285,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               prefixIconAsset: 'assets/icons/profile.svg',
                               fillColor: AppColors.surface.withAlpha(120),
                               borderColor: AppColors.textPrimary.withAlpha(30),
-                              focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
                               autovalidateMode:
@@ -416,7 +304,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               prefixIconAsset: 'assets/icons/mail.svg',
                               fillColor: AppColors.surface.withAlpha(120),
                               borderColor: AppColors.textPrimary.withAlpha(30),
-                              focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
                               autovalidateMode:
@@ -439,7 +326,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               prefixIconAsset: 'assets/icons/eye_off.svg',
                               fillColor: AppColors.surface.withAlpha(120),
                               borderColor: AppColors.textPrimary.withAlpha(30),
-                              focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
                               autovalidateMode:
@@ -462,7 +348,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               prefixIconAsset: 'assets/icons/eye_off.svg',
                               fillColor: AppColors.surface.withAlpha(120),
                               borderColor: AppColors.textPrimary.withAlpha(30),
-                              focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
                               autovalidateMode:

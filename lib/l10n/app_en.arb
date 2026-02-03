@@ -71,7 +71,7 @@
   "settingsDark": "Dark",
   "settingsLight": "Light",
   "settingsLogout": "Log out",
-  "loginTitle": "Welcome back",
+  "loginTitle": "Login",
   "loginSubtitle": "Sign in to continue.",
   "loginEmailLabel": "Email",
   "loginEmailHint": "name@example.com",

@@ -561,7 +561,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _showSettingsSheet() async {
-    final l10n = AppLocalizations.of(context)!;
     final themeController = ServiceLocator.instance.get<AppThemeController>();
     await showModalBottomSheet<void>(
       context: context,
@@ -572,110 +571,117 @@ class _ProfilePageState extends State<ProfilePage> {
         return ValueListenableBuilder<ThemeMode>(
           valueListenable: themeController.themeMode,
           builder: (context, mode, _) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.xl,
-              ),
-              child: AppCard(
-                radius: AppRadius.lg,
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                backgroundColor: AppColors.surface.withAlpha(230),
-                borderColor: AppColors.textPrimary.withAlpha(20),
-                shadows: AppShadows.softCard,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
+            return ValueListenableBuilder<Locale?>(
+              valueListenable: _localeController.locale,
+              builder: (context, locale, __) {
+                final l10n = AppLocalizations.of(sheetContext)!;
+                final currentCode = locale?.languageCode ?? localeCode;
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                  ),
+                  child: AppCard(
+                    radius: AppRadius.lg,
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    backgroundColor: AppColors.surface.withAlpha(230),
+                    borderColor: AppColors.textPrimary.withAlpha(20),
+                    shadows: AppShadows.softCard,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        AppText(l10n.settingsTitle, style: AppTextStyle.h4),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => Navigator.of(sheetContext).pop(),
-                          child: Container(
-                            width: AppSpacing.xl + AppSpacing.sm,
-                            height: AppSpacing.xl + AppSpacing.sm,
-                            decoration: BoxDecoration(
-                              color: AppColors.surface2.withAlpha(160),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.textPrimary.withAlpha(30),
+                        Row(
+                          children: [
+                            AppText(l10n.settingsTitle, style: AppTextStyle.h4),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => Navigator.of(sheetContext).pop(),
+                              child: Container(
+                                width: AppSpacing.xl + AppSpacing.sm,
+                                height: AppSpacing.xl + AppSpacing.sm,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface2.withAlpha(160),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.textPrimary.withAlpha(30),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: AppIcon(
+                                    'assets/icons/x.svg',
+                                    size: AppSpacing.iconMd,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
                               ),
                             ),
-                            child: Center(
-                              child: AppIcon(
-                                'assets/icons/x.svg',
-                                size: AppSpacing.iconMd,
-                                color: AppColors.textPrimary,
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        AppText(l10n.settingsTheme, style: AppTextStyle.caption),
+                        const SizedBox(height: AppSpacing.sm),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _SettingsOption(
+                                label: l10n.settingsDark,
+                                selected: mode == ThemeMode.dark,
+                                onTap: () =>
+                                    themeController.setThemeMode(ThemeMode.dark),
                               ),
                             ),
-                          ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _SettingsOption(
+                                label: l10n.settingsLight,
+                                selected: mode == ThemeMode.light,
+                                onTap: () =>
+                                    themeController.setThemeMode(ThemeMode.light),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        AppText(
+                          l10n.settingsLanguage,
+                          style: AppTextStyle.caption,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _SettingsOption(
+                                label: l10n.profileLanguageTurkish,
+                                selected: currentCode == 'tr',
+                                onTap: () =>
+                                    _localeController.setLocale(const Locale('tr')),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _SettingsOption(
+                                label: l10n.profileLanguageEnglish,
+                                selected: currentCode == 'en',
+                                onTap: () =>
+                                    _localeController.setLocale(const Locale('en')),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        AppButton(
+                          label: l10n.settingsLogout,
+                          variant: AppButtonVariant.secondary,
+                          onPressed: () => _logout(sheetContext),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    AppText(l10n.settingsTheme, style: AppTextStyle.caption),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SettingsOption(
-                            label: l10n.settingsDark,
-                            selected: mode == ThemeMode.dark,
-                            onTap: () =>
-                                themeController.setThemeMode(ThemeMode.dark),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: _SettingsOption(
-                            label: l10n.settingsLight,
-                            selected: mode == ThemeMode.light,
-                            onTap: () =>
-                                themeController.setThemeMode(ThemeMode.light),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    AppText(
-                      l10n.settingsLanguage,
-                      style: AppTextStyle.caption,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SettingsOption(
-                            label: l10n.profileLanguageTurkish,
-                            selected: localeCode == 'tr',
-                            onTap: () =>
-                                _localeController.setLocale(const Locale('tr')),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: _SettingsOption(
-                            label: l10n.profileLanguageEnglish,
-                            selected: localeCode == 'en',
-                            onTap: () =>
-                                _localeController.setLocale(const Locale('en')),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    AppButton(
-                      label: l10n.settingsLogout,
-                      variant: AppButtonVariant.secondary,
-                      onPressed: () => _logout(sheetContext),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );
