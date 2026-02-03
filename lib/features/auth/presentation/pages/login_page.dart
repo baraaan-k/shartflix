@@ -39,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
   late final AuthCubit _cubit;
   StreamSubscription<AuthState>? _subscription;
   bool _didNavigate = false;
+  String? _authError;
 
   @override
   void initState() {
@@ -82,6 +83,9 @@ class _LoginPageState extends State<LoginPage> {
         context.goNamed(AppRouteNames.profilePhoto);
       }
     } else if (state.status == AuthStatus.error && state.message != null) {
+      setState(() {
+        _authError = state.message;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.message!)),
       );
@@ -90,6 +94,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
+    setState(() {
+      _authError = null;
+    });
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
@@ -317,6 +324,15 @@ class _LoginPageState extends State<LoginPage> {
                               focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              onChanged: (_) {
+                                if (_authError != null) {
+                                  setState(() {
+                                    _authError = null;
+                                  });
+                                }
+                              },
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
                                   return l10n.loginEmailRequired;
@@ -338,9 +354,16 @@ class _LoginPageState extends State<LoginPage> {
                               focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
-                              errorText: state.status == AuthStatus.error
-                                  ? state.message
-                                  : null,
+                              errorText: _authError,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              onChanged: (_) {
+                                if (_authError != null) {
+                                  setState(() {
+                                    _authError = null;
+                                  });
+                                }
+                              },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return l10n.loginPasswordRequired;

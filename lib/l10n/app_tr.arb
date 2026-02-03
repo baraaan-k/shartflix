@@ -70,6 +70,7 @@
   "settingsLanguage": "Dil",
   "settingsDark": "Koyu",
   "settingsLight": "Açık",
+  "settingsLogout": "Çıkış Yap",
   "loginTitle": "Tekrar hoş geldin",
   "loginSubtitle": "Devam etmek için giriş yap.",
   "loginEmailLabel": "E-posta",

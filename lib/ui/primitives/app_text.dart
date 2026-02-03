@@ -6,6 +6,8 @@ import '../../theme/app_typography.dart';
 enum AppTextStyle {
   h1,
   h2,
+  h3,
+  h4,
   body,
   caption,
   button,
@@ -35,6 +37,10 @@ class AppText extends StatelessWidget {
         return AppTypography.h1;
       case AppTextStyle.h2:
         return AppTypography.h2;
+      case AppTextStyle.h3:
+        return AppTypography.h3;
+      case AppTextStyle.h4:
+        return AppTypography.h4;
       case AppTextStyle.caption:
         return AppTypography.caption;
       case AppTextStyle.button:

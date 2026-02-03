@@ -10,6 +10,8 @@ import '../../../../core/localization/app_locale_controller.dart';
 import '../../../../app/router/app_router.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme_controller.dart';
+import '../../../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../../../core/navigation/navigation_service.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_cubit.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_state.dart';
 import '../../../../features/home/domain/entities/movie.dart';
@@ -17,6 +19,7 @@ import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_radius.dart';
 import '../../../../theme/app_shadows.dart';
 import '../../../../theme/app_spacing.dart';
+import '../../../../theme/app_typography.dart';
 import '../../../../ui/components/app_button.dart';
 import '../../../../ui/primitives/app_card.dart';
 import '../../../../ui/primitives/app_icon.dart';
@@ -168,8 +171,9 @@ class _ProfilePhotoUploadPageState extends State<ProfilePhotoUploadPage> {
         const SizedBox(height: AppSpacing.lg),
         AppText(
           l10n.profilePhotoHeaderTitle,
-          style: AppTextStyle.h2,
+          style: AppTextStyle.h4,
         ),
+        
         const SizedBox(height: AppSpacing.xs),
         AppText(
           l10n.profilePhotoHeaderSubtitle,
@@ -398,7 +402,7 @@ class _SettingsOption extends StatelessWidget {
         child: Center(
           child: AppText(
             label,
-            style: AppTextStyle.button,
+            style: AppTextStyle.caption,
             color: selected ? Colors.white : AppColors.textSecondary,
           ),
         ),
@@ -541,6 +545,21 @@ class _ProfilePageState extends State<ProfilePage> {
     return value.toString().padLeft(6, '0');
   }
 
+  Future<void> _logout(BuildContext sheetContext) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await ServiceLocator.instance.get<LogoutUseCase>()();
+      if (!mounted) return;
+      Navigator.of(sheetContext).pop();
+      ServiceLocator.instance.get<NavigationService>().goToLogin();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.commonError)),
+      );
+    }
+  }
+
   Future<void> _showSettingsSheet() async {
     final l10n = AppLocalizations.of(context)!;
     final themeController = ServiceLocator.instance.get<AppThemeController>();
@@ -572,7 +591,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     Row(
                       children: [
-                        AppText(l10n.settingsTitle, style: AppTextStyle.h2),
+                        AppText(l10n.settingsTitle, style: AppTextStyle.h4),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => Navigator.of(sheetContext).pop(),
@@ -647,6 +666,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    AppButton(
+                      label: l10n.settingsLogout,
+                      variant: AppButtonVariant.secondary,
+                      onPressed: () => _logout(sheetContext),
                     ),
                   ],
                 ),
@@ -734,7 +759,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 children: [
                                   AppText(
                                     l10n.profileTitle,
-                                    style: AppTextStyle.h1,
+                                    style: AppTextStyle.h4,
                                   ),
                                   const Spacer(),
                                   GestureDetector(
@@ -763,10 +788,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                             color: Colors.white,
                                           ),
                                           const SizedBox(width: AppSpacing.sm),
-                                          AppText(
+                                          Text(
                                             l10n.limitedOfferTitle,
-                                            style: AppTextStyle.button,
-                                            color: Colors.white,
+                                            style: AppTypography.bodyN(
+                                              FontWeight.w600,
+                                            ).copyWith(color: Colors.white),
                                           ),
                                         ],
                                       ),
@@ -785,10 +811,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                           color: AppColors.textPrimary.withAlpha(30),
                                         ),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.settings,
                                         size: 18,
-                                        color: Colors.white,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -840,12 +866,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                       children: [
                                         AppText(
                                           displayName,
-                                          style: AppTextStyle.h2,
+                                          style: AppTextStyle.h4,
                                         ),
                                         const SizedBox(height: AppSpacing.xs),
                                         AppText(
                                           '${l10n.profileIdLabel}: ${_buildUserId(email)}',
-                                          style: AppTextStyle.caption,
+                                          style: AppTextStyle.body,
                                           color: AppColors.textSecondary,
                                         ),
                                       ],
@@ -861,17 +887,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                         vertical: AppSpacing.sm,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.surface.withAlpha(160),
+                                        color: AppColors.brandRed2.withAlpha(20),
                                         borderRadius:
-                                            BorderRadius.circular(AppRadius.pill),
+                                            BorderRadius.circular(AppRadius.md),
                                         border: Border.all(
-                                          color: AppColors.textPrimary.withAlpha(30),
+                                          color: AppColors.textPrimary.withAlpha(10),
                                         ),
                                       ),
-                                      child: AppText(
+                                      child: Text(
                                         l10n.profileChangePhoto,
-                                        style: AppTextStyle.button,
-                                        color: AppColors.textPrimary,
+                                        style: AppTypography.bodyN(
+                                          FontWeight.w600,
+                                        ).copyWith(
+                                          color: AppColors.textPrimary,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -887,7 +916,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 alignment: Alignment.centerLeft,
                                 child: AppText(
                                   l10n.profileFavoritesTitle,
-                                  style: AppTextStyle.h2,
+                                  style: AppTextStyle.button,
                                 ),
                               ),
                             ),

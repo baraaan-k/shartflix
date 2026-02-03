@@ -233,8 +233,8 @@ class _HomePageState extends State<HomePage>
                                 padding: const EdgeInsets.only(top: 12),
                                 child: ClipOval(
                                   child: Container(
-                                    width: 48,
-                                    height: 48,
+                                    width: 42,
+                                    height: 42,
                                     decoration: BoxDecoration(
                                       color:
                                           Colors.black.withValues(alpha: 0.2),
@@ -257,7 +257,7 @@ class _HomePageState extends State<HomePage>
                                   children: [
                                     AppText(
                                       movie.title,
-                                      style: AppTextStyle.h2,
+                                      style: AppTextStyle.h4,
                                       color: Colors.white,
                                       align: TextAlign.left,
                                     ),
@@ -325,6 +325,7 @@ class _HomePageState extends State<HomePage>
                                               .copyWith(fontSize: 15)
                                               .copyWith(
                                                 color: Colors.white,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                           textAlign: TextAlign.left,
                                         ),

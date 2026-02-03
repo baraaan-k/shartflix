@@ -399,6 +399,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
                                   return l10n.registerNameRequired;
@@ -417,6 +419,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
                                   return l10n.registerEmailRequired;
@@ -438,6 +442,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return l10n.registerPasswordRequired;
@@ -459,6 +465,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               focusedBorderColor: AppColors.brandRed,
                               height: AppSpacing.buttonHeight,
                               radius: AppRadius.lg,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return l10n.registerConfirmPasswordRequired;

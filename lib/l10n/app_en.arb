@@ -70,6 +70,7 @@
   "settingsLanguage": "Language",
   "settingsDark": "Dark",
   "settingsLight": "Light",
+  "settingsLogout": "Log out",
   "loginTitle": "Welcome back",
   "loginSubtitle": "Sign in to continue.",
   "loginEmailLabel": "Email",
