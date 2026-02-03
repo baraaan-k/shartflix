@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./ScreenShots.png" width="950" alt="Shartflix Screenshots" />
+  <img src="./appsss.png" width="950" alt="Shartflix Screenshots" />
 </p>
 
 # Shartflix — Flutter Case Study
@@ -7,7 +7,6 @@
 Shartflix is a Flutter movie browsing app built as a case study project.  
 It delivers a clean movie list experience with pagination, a movie detail flow, and a favorites (like/unlike) interaction.  
 On top of the core requirements, the project includes several bonus implementations such as Firebase (Analytics + Crashlytics), light/dark theme, centralized navigation, a logger service, Lottie animation, localization (TR/EN), and branded splash/app icon.
-
 
 ---
 
@@ -49,6 +48,11 @@ On top of the core requirements, the project includes several bonus implementati
 ### Splash Screen + App Icon
 - Branded app icon
 - Branded splash screen
+
+### Auth Animation (Hanging Posters)
+- Login entry includes a subtle animated backdrop
+- Four hanging movie posters swing with a gentle pendulum motion
+- Includes a soft glow/sparkle feel and loops smoothly
 
 ---
 
